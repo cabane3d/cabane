@@ -1,0 +1,42 @@
+{
+  "name": "cabane",
+  "private": true,
+  "description": "Free 2D/3D interior design software that runs entirely on your machine.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @cabane3d/desktop dev",
+    "dev:web": "pnpm --filter @cabane3d/desktop dev:web",
+    "build": "turbo run build",
+    "lint": "biome check . && depcruise packages apps",
+    "format": "biome check --write .",
+    "typecheck": "turbo run typecheck && tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "bddgen && playwright test --project=e2e",
+    "test:electron": "pnpm --filter @cabane3d/desktop build && bddgen && playwright test --project=electron --pass-with-no-tests",
+    "test:visual": "bddgen && playwright test --project=visual --pass-with-no-tests",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e",
+    "knip": "knip",
+    "factory:coverage": "scripts/factory/check-scenario-coverage.sh",
+    "factory:frozen": "scripts/factory/check-acceptance-frozen.sh",
+    "licenses:check": "node scripts/check-licenses.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.4",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "dependency-cruiser": "^18.7.0",
+    "fast-check": "^4.10.2",
+    "knip": "^6.44.0",
+    "playwright-bdd": "^9.2.1",
+    "turbo": "^2.11.10",
+    "typescript": "6.0.3",
+    "vitest": "^5.0.5"
+  }
+}

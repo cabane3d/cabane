@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "timezone": "Europe/Paris",
+  "schedule": ["before 6am on monday"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Electron security fixes go out as soon as possible (ADR-0002).",
+      "matchPackageNames": ["electron"],
+      "schedule": ["at any time"],
+      "labels": ["electron"]
+    },
+    {
+      "matchPackageNames": [
+        "vite",
+        "electron-vite",
+        "@vitejs/**",
+        "@tailwindcss/**",
+        "tailwindcss"
+      ],
+      "groupName": "build tooling"
+    },
+    {
+      "matchPackageNames": [
+        "vitest",
+        "@vitest/**",
+        "@playwright/test",
+        "playwright-bdd",
+        "fast-check"
+      ],
+      "groupName": "test tooling"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions"
+    }
+  ]
+}

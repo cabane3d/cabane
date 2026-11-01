@@ -1,0 +1,14 @@
+{
+  "name": "@cabane3d/platform",
+  "version": "0.0.0",
+  "private": true,
+  "description": "System access interface and its fake implementation for tests",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@cabane3d/ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bring-your-own AI provider integration, acting through core commands",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  }
+}
