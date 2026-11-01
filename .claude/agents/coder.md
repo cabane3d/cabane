@@ -3,7 +3,8 @@ name: coder
 description: Implements a Cabane feature until its frozen acceptance tests pass and `pnpm check` is green. Used by /implement after test-writer, and again to address reviewer findings.
 tools: Read, Grep, Glob, Edit, Write, Bash
 disallowedTools: Agent
-model: inherit
+model: claude-opus-5-5
+effort: high
 hooks:
   PreToolUse:
     - matcher: "Edit|Write|NotebookEdit"
