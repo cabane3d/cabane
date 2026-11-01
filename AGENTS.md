@@ -12,8 +12,9 @@ Code is written by agents from Gherkin specs and reviewed by the maintainer. Thi
 4. **Specs belong to the maintainer** (ADR-0011): never modify `specs/**`. If a spec is ambiguous, contradictory or incomplete, stop and report it.
 5. **Every document change goes through a `core` command** (ADR-0004). No direct writes to the Yjs document from the UI, the renderer, the AI or the importer.
 6. **Units** (ADR-0017): millimeters (`Mm` type) and radians throughout the model. Conversions (imported formats, Three.js meters, display) happen **only at boundaries**, in the dedicated functions. Geometric comparisons use the `core` tolerance, never `===`.
-7. **Electron security** (ADR-0010): `contextIsolation`, `sandbox`, no `nodeIntegration`. The renderer accesses the system **only** through `packages/platform`. Every new IPC channel is typed and validated with zod.
-8. **Nothing without tests.** A task is done only when `pnpm check` passes.
+7. **Design tokens only** (ADR-0019): no raw colors, arbitrary Tailwind colors, radii or shadows outside `packages/ui/src/theme.css`. Use token utilities (`bg-background`, `text-accent-text`…) or `var(--token)`. A new visual need means a new token, documented in `docs/design/visual-identity.md`. Target WCAG 2.2 AA; never convey a state by color alone.
+8. **Electron security** (ADR-0010): `contextIsolation`, `sandbox`, no `nodeIntegration`. The renderer accesses the system **only** through `packages/platform`. Every new IPC channel is typed and validated with zod.
+9. **Nothing without tests.** A task is done only when `pnpm check` passes.
 
 ## Architecture (ADR-0003)
 
@@ -67,6 +68,8 @@ To target a package: `pnpm --filter @cabane3d/<package> <command>`.
 
 - Specs live in `specs/<domain>/<feature>.feature` (ADR-0018), in English. Context and business rules are in the `Feature` description.
 - Each scenario has exactly one identifier (`@WALL-012`) and at least one level tag (`@unit`, `@e2e`, `@electron`, `@visual`). `@unit` scenarios are referenced by a Vitest test; the others run through playwright-bdd. `scripts/factory/check-scenario-coverage.sh` checks this.
+- UI names in specs, accessible names in the UI and locators in E2E tests follow the glossary in `docs/design/main-window.md`.
+- Visual rules (palette, states, plan rendering, typography) are in `docs/design/visual-identity.md`.
 - Acceptance step definitions use the `appPage` fixture from `tests/support/fixtures.ts`, never `page` directly, so one scenario can run in the browser and in Electron.
 - Step definitions use `core` **commands** and the fake `platform` implementation, never internal details.
 - Geometric invariants are tested with fast-check.

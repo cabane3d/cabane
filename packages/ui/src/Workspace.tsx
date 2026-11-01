@@ -22,10 +22,12 @@ export function Workspace({ platform }: WorkspaceProps) {
   return (
     <main
       aria-label="Workspace"
-      className="flex h-screen flex-col items-center justify-center gap-2 bg-neutral-50 text-neutral-900"
+      className="flex h-screen flex-col items-center justify-center gap-2 bg-background text-foreground"
     >
       <h1 className="font-semibold text-3xl">Cabane</h1>
-      {appInfo && <p className="text-neutral-500 text-sm">Version {appInfo.version}</p>}
+      {appInfo && (
+        <p className="text-muted-foreground text-sm tabular-nums">Version {appInfo.version}</p>
+      )}
     </main>
   );
 }

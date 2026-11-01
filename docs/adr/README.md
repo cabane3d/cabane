@@ -36,6 +36,7 @@ Agents (coder, test-writer, reviewer) must comply with accepted ADRs. A change t
 | [0016](0016-ui-framework.md)                               | UI framework: React                                          | Accepted |
 | [0017](0017-units-and-coordinate-systems.md)               | Units and coordinate systems                                 | Accepted |
 | [0018](0018-plain-gherkin-feature-files.md)                | Plain Gherkin `.feature` files                               | Accepted |
+| [0019](0019-design-system-and-tokens.md) | Design system and tokens | Accepted |
 
 ## Template
 
