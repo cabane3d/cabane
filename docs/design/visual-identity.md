@@ -79,6 +79,34 @@ The renderer reads these tokens with `getComputedStyle(document.documentElement)
 - **Airy density** for now: comfortable spacing, controls at least 32 px high.
 - **Icons**: Lucide (`lucide-react`, ISC), 16–20 px, stroke width 1.75. Installed with the first component that needs an icon.
 
+## Logo
+
+The logo is a modern house, in deliberate contrast with the name *cabane* (hut): a deep upper frame cantilevered over an open ground floor, held by the end wall and a single column, on a terrace that overhangs on the right. Files are in [`logo/`](logo/).
+
+| File | Use |
+|---|---|
+| `cabane-icon.svg`, `cabane-logo.svg` | Masters in `currentColor`: inline them so they take the surrounding text color |
+| `cabane-*-jet-black.svg` | On light backgrounds |
+| `cabane-*-snow.svg` | On dark backgrounds |
+| `cabane-*-pumpkin-spice.svg` | Accent use and app icon |
+
+### Construction
+
+- **64-unit grid**, icon centered: frame 52 × 20, ground floor 16 high, terrace 56 wide, flush with the end wall on the left.
+- **One stroke weight everywhere: 4 units**, including the wordmark stems. Never thicken or thin a single part.
+- **Wordmark**: Inter outlined to paths (no font needed), weight tuned (≈ 649) so the stems are exactly 4 units; x-height 16 units, equal to the ground floor height; baseline on the top of the terrace; 12 units between the terrace end and the first letter.
+
+### Usage
+
+- **Single color on a transparent background**, always: Jet Black on light backgrounds, Snow on dark ones, Pumpkin Spice for accent use. Logos are exempt from WCAG contrast rules, but prefer Jet Black over Pumpkin Spice on Snow (2.35:1).
+- **Clear space**: at least 8 units (two strokes) on every side.
+- **Minimum size**: icon 16 px (strokes are then 1 px), wide logo 32 px high.
+- Never stretch, outline, add a gradient or a shadow, recolor outside the three brand colors, or move the wordmark relative to the icon.
+
+### App icon
+
+`apps/desktop/build/icon.png` (1024 px) and `icon.ico` are the icon in **Pumpkin Spice**, the only brand color that stays visible on both light and dark taskbars and docks. The drawing fills about 820 px of the 1024 px canvas, as platform guidelines expect. electron-builder derives the macOS `.icns` from the PNG.
+
 ## Accessibility
 
 - WCAG 2.2 **AA**: text ≥ 4.5:1, large text and non-text elements (icons, field borders, selection strokes) ≥ 3:1. Every token pair above has been checked.
