@@ -11,14 +11,24 @@ permissions:
 
 jobs:
   close:
-    if: >-
-      !contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.pull_request.author_association)
-      && github.event.pull_request.user.type != 'Bot'
+    if: github.event.pull_request.user.type != 'Bot'
     runs-on: ubuntu-latest
     steps:
-      - name: Comment and close
+      # author_association is unreliable for organization members whose membership is private,
+      # so the decision is based on the author's permission on the repository.
+      - name: Close unless the author can write to the repository
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
+          permission="$(gh api "repos/$REPO/collaborators/$AUTHOR/permission" --jq .permission 2>/dev/null || echo none)"
+          case "$permission" in
+            admin | maintain | write)
+              echo "$AUTHOR has $permission access: keeping the pull request open."
+              exit 0
+              ;;
+          esac
+          echo "$AUTHOR has $permission access: closing the pull request."
           gh pr close "$PR_URL" --comment "Thank you for your interest in Cabane! The project is open source but does not accept external contributions, so this pull request is closed automatically. Bug reports and ideas are welcome in the Discussions."
