@@ -12,7 +12,7 @@
     "dev": "pnpm --filter @cabane3d/desktop dev",
     "dev:web": "pnpm --filter @cabane3d/desktop dev:web",
     "build": "turbo run build",
-    "lint": "biome check . && depcruise packages apps",
+    "lint": "biome check . && depcruise packages apps && scripts/check-design-tokens.sh",
     "format": "biome check --write .",
     "typecheck": "turbo run typecheck && tsc --noEmit -p tsconfig.json",
     "test": "vitest run",

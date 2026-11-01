@@ -38,6 +38,7 @@ The orchestrator gives you the spec path, the base ref (usually `main`) and, in 
 **Architecture and ADRs**
 - Package boundaries (ADR-0003), document changes only through commands (ADR-0004), units and conversions (ADR-0017), Electron security and `platform` (ADR-0010).
 - Clean-room importers (ADR-0007): nothing that looks derived from GPL source code.
+- UI (ADR-0019): tokens only (no raw color, radius or shadow, even written in an unusual way), names from the glossary in `docs/design/main-window.md`, states not conveyed by color alone, keyboard focus visible.
 - New dependencies: AGPL-3.0 compatible license, actually necessary, maintained.
 
 **Correctness and robustness**

@@ -1,0 +1,139 @@
+/*
+ * Cabane design tokens (ADR-0019, docs/design/visual-identity.md).
+ * The only place where raw color values are allowed. Everything else uses these tokens,
+ * through Tailwind utilities (bg-background, text-accent-text…) or var(--token).
+ * Names follow shadcn/ui conventions so its components work unchanged.
+ */
+@import "@fontsource-variable/inter";
+
+:root {
+  color-scheme: light;
+
+  /* Brand palette */
+  --pumpkin-spice: #ff812c;
+  --jet-black: #292f36;
+  --snow: #fcf7f8;
+
+  /* Interface */
+  --background: var(--snow);
+  --foreground: var(--jet-black);
+  --muted: #f2eceb;
+  --muted-foreground: #5e646b;
+  --border: #d9d3d2;
+  --input: #8a8f96;
+
+  /* Accent: fill with dark content, strong variant for strokes and icons, text variant for text */
+  --primary: var(--pumpkin-spice);
+  --primary-foreground: var(--jet-black);
+  --accent-strong: #d2601a;
+  --accent-text: #a84612;
+  --ring: var(--accent-strong);
+
+  /* Status (standard for now) */
+  --destructive: #c62828;
+  --success: #2e7d32;
+  --warning: #9a5b00;
+  --info: #1565c0;
+
+  /* Plan view */
+  --plan-paper: var(--snow);
+  --plan-ink: var(--jet-black);
+  --plan-selection: var(--accent-strong);
+  --plan-selection-text: var(--accent-text);
+  --plan-handle-fill: var(--plan-paper);
+  --plan-handle-stroke: var(--plan-ink);
+  --plan-grain-opacity: 0.55;
+
+  --radius: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --background: #1d2127;
+    --foreground: var(--snow);
+    --muted: #262b32;
+    --muted-foreground: #a9afb6;
+    --border: #3a414a;
+    --input: #6b727b;
+    --accent-strong: var(--pumpkin-spice);
+    --accent-text: var(--pumpkin-spice);
+    --destructive: #ff7a7a;
+    --success: #6ccb73;
+    --warning: #ffb547;
+    --info: #6cb6ff;
+    --plan-paper: var(--jet-black);
+    --plan-ink: #e8e2e1;
+    --plan-grain-opacity: 0.35;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1d2127;
+  --foreground: var(--snow);
+  --muted: #262b32;
+  --muted-foreground: #a9afb6;
+  --border: #3a414a;
+  --input: #6b727b;
+  --accent-strong: var(--pumpkin-spice);
+  --accent-text: var(--pumpkin-spice);
+  --destructive: #ff7a7a;
+  --success: #6ccb73;
+  --warning: #ffb547;
+  --info: #6cb6ff;
+  --plan-paper: var(--jet-black);
+  --plan-ink: #e8e2e1;
+  --plan-grain-opacity: 0.35;
+}
+
+/*
+ * Tailwind theme: the default palette, radii and shadows are removed, so only tokens exist
+ * (`bg-red-500`, `rounded-lg` or `shadow-md` simply do not generate any CSS).
+ */
+@theme inline {
+  --color-*: initial;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-text: var(--accent-text);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-plan-paper: var(--plan-paper);
+  --color-plan-ink: var(--plan-ink);
+  --color-plan-selection: var(--plan-selection);
+
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    background-color: var(--background);
+    color: var(--foreground);
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}

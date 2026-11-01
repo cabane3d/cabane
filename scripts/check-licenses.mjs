@@ -25,6 +25,8 @@ const ALLOWED = new Set([
   'MIT',
   'MIT-0',
   'MPL-2.0',
+  // Fonts (e.g. Inter) are bundled as separate works; OFL allows distribution with any software.
+  'OFL-1.1',
   'Python-2.0',
   'Unlicense',
   'Zlib',
