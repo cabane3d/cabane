@@ -3,7 +3,7 @@ name: test-writer
 description: Turns a Cabane Gherkin spec into failing acceptance and unit tests, before any implementation exists. Used by /implement as the first step of the agent factory.
 tools: Read, Grep, Glob, Edit, Write, Bash
 disallowedTools: Agent
-model: inherit
+model: claude-haiku-5-5
 hooks:
   PreToolUse:
     - matcher: "Edit|Write|NotebookEdit"

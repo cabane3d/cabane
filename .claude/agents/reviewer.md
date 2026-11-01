@@ -3,7 +3,7 @@ name: reviewer
 description: Read-only review of a Cabane feature branch against its spec, the ADRs and AGENTS.md. Returns APPROVED or ranked findings. Used by /implement after coder.
 tools: Read, Grep, Glob, Bash
 disallowedTools: Edit, Write, NotebookEdit, Agent
-model: inherit
+model: claude-opus-5-5
 hooks:
   PreToolUse:
     - matcher: "Bash"
