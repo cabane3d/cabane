@@ -13,16 +13,22 @@ You are the **orchestrator**. You do not write code or tests yourself: you deleg
 
 ## 0. Preconditions
 
+Derive `<feature>` from the spec file name (without `.feature`). The spec is written by the maintainer and lands in the same PR as its implementation, so the factory runs on the branch `feat/<feature>`, which normally already exists and holds the committed spec.
+
 Stop and report if any of these fails:
 - The spec file exists and is under `specs/`.
 - The working tree is clean (`git status --porcelain` is empty).
 - The project is scaffolded: `package.json` defines a `check` script.
 - `scripts/factory/scenario-ids.sh <spec>` returns at least one identifier.
 
-Then:
-- Derive `<feature>` from the spec file name (without `.feature`).
-- Create the branch `feat/<feature>` from `main`. If it already exists, stop and ask whether to resume or start over.
-- Record the base ref: `main`.
+Then choose the branch:
+- **Current branch is `feat/<feature>`** and the spec is committed on it: work on it.
+- **Current branch is `main`** and `feat/<feature>` does not exist: create it from `main`, commit the spec on it if it is not committed yet (`docs(spec): add <feature> specification`), and work on it.
+- **Anything else** (another branch, or `feat/<feature>` exists but is not checked out): stop and ask.
+
+If the branch already contains a `test: red tests for <feature>` commit, a previous run started: stop and ask whether to resume from the next step or start over.
+
+Record the base ref: `main`.
 
 ## 1. Red tests (test-writer)
 
