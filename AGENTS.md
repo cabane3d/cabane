@@ -76,14 +76,15 @@ To target a package: `pnpm --filter @cabane3d/<package> <command>`.
 - No network calls in tests. The AI is always mocked (AI SDK mock model).
 - Files in the import corpora (`tests/fixtures/import/<format>/`) must be redistributable; their origin and license are documented in each folder's README.
 
-## Agent workflow (ADR-0012)
+## Agent workflow (ADR-0012, ADR-0020)
 
-Mandatory order: `test-writer` → `coder` → `reviewer`.
+Mandatory order: `test-writer` → `coder` → draft PR → `reviewer` → maintainer → `coder` (`/implement`).
 
 - **test-writer**: turns the spec into tests, then **proves they fail** before committing (`test: red tests for <ID>`). Writes only to `tests/**` and step definitions.
 - **coder**: implements until `pnpm check` passes. **Never modifies acceptance tests.** If a test looks wrong, stop and report it instead of working around it.
-- **reviewer**: read-only. Checks coverage of every scenario, compliance with ADRs and this file, security and simplicity. Returns `APPROVED` or a list of findings ranked by severity.
-- At most **3 loops** between coder and reviewer; beyond that, stop and summarize the blocker for the maintainer.
+- **reviewer**: read-only. Checks coverage of every scenario, compliance with ADRs and this file, security and simplicity. Returns a JSON verdict whose findings each give a severity, the problem and a proposed fix, anchored to lines when possible.
+- **Review happens on the pull request**: the orchestrator posts the reviewer's findings there (inline when the lines are in the diff), then **stops** until the maintainer has added their own comments and says to continue. Coder then handles every open comment; maintainer comments take precedence. Only the orchestrator talks to GitHub, through `scripts/factory/post-review.sh`, `fetch-pr-feedback.sh` and `reply-pr-feedback.sh`.
+- After **3 review rounds** without approval, no new round starts without the maintainer's decision.
 
 ## Code conventions
 

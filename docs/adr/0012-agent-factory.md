@@ -1,6 +1,6 @@
 # ADR-0012: Agent factory and human review
 
-- **Status**: Accepted
+- **Status**: Accepted, orchestration and review rounds amended by ADR-0020
 - **Date**: 2026-10-31
 
 ## Context
