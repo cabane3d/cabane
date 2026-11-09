@@ -29,7 +29,7 @@ Agents (coder, test-writer, reviewer) must comply with accepted ADRs. A change t
 | [0009](0009-bring-your-own-ai.md)                          | Bring-your-own AI provider                                   | Accepted |
 | [0010](0010-electron-security-and-platform-abstraction.md) | Electron security and `platform` abstraction                 | Accepted |
 | [0011](0011-executable-gherkin-specs.md)                   | Executable Gherkin specifications                            | Accepted (amended by 0018) |
-| [0012](0012-agent-factory.md)                              | Agent factory and human review                               | Accepted |
+| [0012](0012-agent-factory.md)                              | Agent factory and human review                               | Accepted (amended by 0020) |
 | [0013](0013-testing-strategy.md)                           | Testing strategy                                             | Accepted |
 | [0014](0014-ci-cd.md)                                      | CI/CD with GitHub Actions                                    | Accepted |
 | [0015](0015-distribution.md)                               | Distribution: Linux and Windows first, at no cost            | Accepted |
@@ -37,6 +37,7 @@ Agents (coder, test-writer, reviewer) must comply with accepted ADRs. A change t
 | [0017](0017-units-and-coordinate-systems.md)               | Units and coordinate systems                                 | Accepted |
 | [0018](0018-plain-gherkin-feature-files.md)                | Plain Gherkin `.feature` files                               | Accepted |
 | [0019](0019-design-system-and-tokens.md) | Design system and tokens | Accepted |
+| [0020](0020-review-on-github-with-maintainer-gate.md) | Review on the pull request, with a maintainer gate | Accepted |
 
 ## Template
 

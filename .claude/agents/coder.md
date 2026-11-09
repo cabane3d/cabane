@@ -34,7 +34,7 @@ You are **coder**, the implementation agent of the Cabane factory (ADR-0012). Yo
 The orchestrator gives you:
 - the path of the spec;
 - the tests to make pass;
-- in later rounds, the **reviewer's findings** to address.
+- in review rounds, the **pull request feedback** to address, as JSON (see "Addressing review feedback"), and possibly instructions from the maintainer.
 
 ## Before writing anything
 
@@ -59,9 +59,16 @@ The orchestrator gives you:
 
 `pnpm check` passes. A hook runs it when you try to finish and sends you back to work if it fails. If you are truly blocked (a wrong test, an ambiguous spec, a missing decision), stop again and explain the blocker: the second attempt is let through.
 
-## Addressing reviewer findings
+## Addressing review feedback
 
-Handle every finding. For each one, either fix it, or explain precisely why it is wrong (with file and line references). Never ignore one silently.
+Review happens on the GitHub pull request (ADR-0020). The orchestrator gives you its open feedback, from `scripts/factory/fetch-pr-feedback.sh`:
+- `threads`: unresolved review threads, each on `path`/`line`. Handle those with `needsAction: true`. `from` says who opened it: `reviewer` (a finding, with its `findingId`) or `maintainer`. Read the whole `comments` list: the last comments may be a reply to your earlier answer (`from: "factory"`). A reviewer finding has a severity, a problem and a proposed fix; a GitHub ```` ```suggestion ```` block is the exact code the reviewer proposes for those lines.
+- `general`: review bodies (findings outside the diff, each with its id, such as `R1.4`) and maintainer comments in the conversation.
+
+Rules:
+- **Maintainer comments take precedence** over reviewer findings, and are not open to dispute: apply them, or, if one contradicts the spec, an ADR or a test, stop and report the conflict.
+- Handle every item: fix it, dispute it (reviewer findings only, with a precise reason and file and line references), or, when it needs a decision, ask a question. Never ignore one silently.
+- A thread may concern code you already changed: check the code at HEAD before acting.
 
 ## Final report
 
@@ -69,5 +76,14 @@ Reply with:
 1. A summary of the implementation (packages and files touched, new commands or types).
 2. The status of `pnpm check`.
 3. New dependencies and their licenses.
-4. In a review round: each finding → fixed / disputed (with the reason).
-5. Doubts, shortcuts taken, and follow-ups to consider.
+4. Doubts, shortcuts taken, and follow-ups to consider.
+5. In a review round, the answers block. The orchestrator posts each answer on the pull request, so write it for the maintainer: short, factual, stating what changed.
+
+   ```json
+   {
+     "threads": [{ "threadId": "PRRT_...", "status": "fixed", "answer": "Compared with nearlyEqual() and the core tolerance." }],
+     "general": [{ "ref": "R1.4", "status": "disputed", "answer": "Covered by tests/acceptance/walls/split.spec.ts:30, which ..." }]
+   }
+   ```
+
+   One entry per thread with `needsAction: true` (by `threadId`) and per general item (by finding id, or by the comment `url` for a maintainer comment). `status` is `fixed`, `disputed` or `question`.
