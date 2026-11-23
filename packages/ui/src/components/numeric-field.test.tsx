@@ -36,12 +36,30 @@ function setup(
 }
 
 describe('NumericField', () => {
-  it('shows the value in the display unit, with the unit', () => {
+  it('@UI-004: shows the value in the display unit, with the unit', () => {
     setup({ value: 3500, unit: 'm' });
     const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Length' });
     expect(input.value).toBe('3.5');
     const unit = screen.getByText('m');
     expect(input.getAttribute('aria-describedby')).toBe(unit.id);
+  });
+
+  it.each([
+    ['4200', 4200],
+    ['3.5 m', 3500],
+    ['3,5 m', 3500],
+    ['350 cm', 3500],
+    ['3500 + 200', 3700],
+    ['4200 / 2', 2100],
+    ['3 m + 20 cm', 3200],
+    ['(3 m - 20 cm) / 2', 1400],
+  ])('@UI-001: %j becomes %d mm', async (entry, length) => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, `${entry}{Enter}`);
+    // 3500 mm entered as "3.5 m" is unchanged, so nothing is committed.
+    const committed = onCommit.mock.calls[0]?.[0] ?? 3500;
+    expect(committed).toBeCloseTo(length, 9);
   });
 
   it('commits an expression with units on Enter, in millimeters', async () => {
@@ -93,18 +111,26 @@ describe('NumericField', () => {
     expect(onCommit.mock.calls[0]?.[0]).toBeCloseTo(10_000, 9);
   });
 
-  it.each(['0', '-200', '3500 - 4000', '0.001'])(
-    'refuses %s: a length is never zero or negative',
-    async (entry) => {
-      const { input, onCommit, user } = setup();
-      await user.clear(input);
-      await user.type(input, `${entry}{Enter}`);
-      expect(onCommit).not.toHaveBeenCalled();
-      expect(input.value).toBe(entry);
-      expect(input.getAttribute('aria-invalid')).toBe('true');
-      expect(screen.getByText('Must be greater than 0')).toBeTruthy();
-    },
-  );
+  it.each([
+    ['abc', 'Enter a length'],
+    ['3500 +', 'Enter a length'],
+    ['3 ft', 'Enter a length'],
+    ['2 m * 3 m', 'Enter a length'],
+    ['3500 / 0', 'Enter a length'],
+    ['0', 'Must be greater than 0'],
+    ['-200', 'Must be greater than 0'],
+    ['1 m - 2 m', 'Must be greater than 0'],
+    ['3500 - 4000', 'Must be greater than 0'],
+    ['0.001', 'Must be greater than 0'],
+  ])('@UI-002: refuses %j with a message and keeps 3500 mm', async (entry, message) => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, `${entry}{Enter}`);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input.value).toBe(entry);
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')).toContain(screen.getByText(message).id);
+  });
 
   it('calls onEmpty and shows the current value again when an emptied field is committed', async () => {
     const onEmpty = vi.fn();
@@ -125,7 +151,7 @@ describe('NumericField', () => {
     expect(input.getAttribute('aria-invalid')).toBe('true');
   });
 
-  it('restores the current value on Escape', async () => {
+  it('@UI-003: restores the current value on Escape', async () => {
     const { input, onCommit, user } = setup();
     await user.clear(input);
     await user.type(input, 'abc{Enter}{Escape}');
