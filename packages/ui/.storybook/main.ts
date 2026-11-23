@@ -6,6 +6,7 @@ const config: StorybookConfig = {
   addons: ['@storybook/addon-a11y', '@storybook/addon-themes'],
   framework: { name: '@storybook/react-vite', options: {} },
   // Cabane makes no network calls (ADR-0002): no telemetry, no "what's new" fetches.
+  // The version check is turned off by `--no-version-updates` in the `storybook` script.
   core: { disableTelemetry: true, disableWhatsNewNotifications: true },
 };
 

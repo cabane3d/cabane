@@ -23,7 +23,8 @@ export function ToastViewport({
   return (
     <ToastPrimitive.Viewport
       className={cn(
-        'fixed right-0 bottom-0 z-(--layer-toast) flex w-drawer max-w-full flex-col gap-2 p-4 outline-none',
+        // F8 focuses the viewport: keep the token focus outline, inset so the window edge does not clip it.
+        'fixed right-0 bottom-0 z-(--layer-toast) flex w-drawer max-w-full flex-col gap-2 p-4 focus-visible:-outline-offset-2',
         className,
       )}
       {...props}

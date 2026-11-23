@@ -11,7 +11,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p .",
-    "storybook": "storybook dev --port 6006 --no-open",
+    "storybook": "storybook dev --port 6006 --no-open --no-version-updates",
     "storybook:build": "storybook build --output-dir dist/storybook"
   },
   "dependencies": {

@@ -57,6 +57,10 @@ describe('NumericField', () => {
     const { input, onCommit, user } = setup();
     await user.clear(input);
     await user.type(input, `${entry}{Enter}`);
+    // The entry is accepted: the field is valid and shows the value back in millimeters (the mock
+    // onCommit does not change `value`, so a committed entry shows the current 3500 mm again).
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.value).toBe('3500');
     // 3500 mm entered as "3.5 m" is unchanged, so nothing is committed.
     const committed = onCommit.mock.calls[0]?.[0] ?? 3500;
     expect(committed).toBeCloseTo(length, 9);
