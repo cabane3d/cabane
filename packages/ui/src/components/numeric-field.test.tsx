@@ -1,0 +1,167 @@
+// @vitest-environment jsdom
+import { type Mm, mm } from '@cabane3d/core';
+import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { NumericField } from './numeric-field';
+
+afterEach(cleanup);
+
+function setup(
+  props: {
+    value?: number;
+    unit?: 'mm' | 'cm' | 'm';
+    min?: number;
+    max?: number;
+    onEmpty?: () => void;
+  } = {},
+) {
+  const onCommit = vi.fn<(value: Mm) => void>();
+  render(
+    <NumericField
+      aria-label="Length"
+      value={mm(props.value ?? 3500)}
+      unit={props.unit ?? 'mm'}
+      min={props.min === undefined ? undefined : mm(props.min)}
+      max={props.max === undefined ? undefined : mm(props.max)}
+      onCommit={onCommit}
+      invalidMessage="Enter a length"
+      outOfRangeMessage="Out of range"
+      nonPositiveMessage="Must be greater than 0"
+      {...(props.onEmpty ? { onEmpty: props.onEmpty } : {})}
+    />,
+  );
+  const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Length' });
+  return { input, onCommit, user: userEvent.setup() };
+}
+
+describe('NumericField', () => {
+  it('@UI-004: shows the value in the display unit, with the unit', () => {
+    setup({ value: 3500, unit: 'm' });
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Length' });
+    expect(input.value).toBe('3.5');
+    const unit = screen.getByText('m');
+    expect(input.getAttribute('aria-describedby')).toBe(unit.id);
+  });
+
+  it.each([
+    ['4200', 4200],
+    ['3.5 m', 3500],
+    ['3,5 m', 3500],
+    ['350 cm', 3500],
+    ['3500 + 200', 3700],
+    ['4200 / 2', 2100],
+    ['3 m + 20 cm', 3200],
+    ['(3 m - 20 cm) / 2', 1400],
+  ])('@UI-001: %j becomes %d mm', async (entry, length) => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, `${entry}{Enter}`);
+    // The entry is accepted: the field is valid and shows the value back in millimeters (the mock
+    // onCommit does not change `value`, so a committed entry shows the current 3500 mm again).
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(input.value).toBe('3500');
+    // 3500 mm entered as "3.5 m" is unchanged, so nothing is committed.
+    const committed = onCommit.mock.calls[0]?.[0] ?? 3500;
+    expect(committed).toBeCloseTo(length, 9);
+  });
+
+  it('commits an expression with units on Enter, in millimeters', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, '3 m + 20 cm{Enter}');
+    expect(onCommit).toHaveBeenCalledOnce();
+    expect(onCommit.mock.calls[0]?.[0]).toBeCloseTo(3200, 9);
+  });
+
+  it('commits when the field loses focus', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, '4200 / 2');
+    await user.tab();
+    expect(onCommit.mock.calls[0]?.[0]).toBeCloseTo(2100, 9);
+  });
+
+  it('does not commit an unchanged value', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, '3.5 m{Enter}');
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  it('keeps an invalid entry, marks it invalid and commits nothing', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, '3500 +{Enter}');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input.value).toBe('3500 +');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    const message = screen.getByText('Enter a length');
+    expect(input.getAttribute('aria-describedby')).toContain(message.id);
+  });
+
+  it('rejects a value outside min and max', async () => {
+    const { input, onCommit, user } = setup({ min: 10, max: 10_000 });
+    await user.clear(input);
+    await user.type(input, '20 m{Enter}');
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(screen.getByText('Out of range')).toBeTruthy();
+  });
+
+  it('accepts the bounds themselves', async () => {
+    const { input, onCommit, user } = setup({ min: 10, max: 10_000 });
+    await user.clear(input);
+    await user.type(input, '10 m{Enter}');
+    expect(onCommit.mock.calls[0]?.[0]).toBeCloseTo(10_000, 9);
+  });
+
+  it.each([
+    ['abc', 'Enter a length'],
+    ['3500 +', 'Enter a length'],
+    ['3 ft', 'Enter a length'],
+    ['2 m * 3 m', 'Enter a length'],
+    ['3500 / 0', 'Enter a length'],
+    ['0', 'Must be greater than 0'],
+    ['-200', 'Must be greater than 0'],
+    ['1 m - 2 m', 'Must be greater than 0'],
+    ['3500 - 4000', 'Must be greater than 0'],
+    ['0.001', 'Must be greater than 0'],
+  ])('@UI-002: refuses %j with a message and keeps 3500 mm', async (entry, message) => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, `${entry}{Enter}`);
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input.value).toBe(entry);
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')).toContain(screen.getByText(message).id);
+  });
+
+  it('calls onEmpty and shows the current value again when an emptied field is committed', async () => {
+    const onEmpty = vi.fn();
+    const { input, onCommit, user } = setup({ onEmpty });
+    await user.clear(input);
+    await user.type(input, '{Enter}');
+    expect(onEmpty).toHaveBeenCalledOnce();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input.value).toBe('3500');
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+  });
+
+  it('marks an emptied field invalid when there is no onEmpty', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.tab();
+    expect(onCommit).not.toHaveBeenCalled();
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('@UI-003: restores the current value on Escape', async () => {
+    const { input, onCommit, user } = setup();
+    await user.clear(input);
+    await user.type(input, 'abc{Enter}{Escape}');
+    expect(input.value).toBe('3500');
+    expect(input.getAttribute('aria-invalid')).toBe('false');
+    expect(screen.queryByText('Enter a length')).toBeNull();
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+});

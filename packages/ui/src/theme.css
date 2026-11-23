@@ -1,10 +1,11 @@
 /*
- * Cabane design tokens (ADR-0019, docs/design/visual-identity.md).
+ * Cabane design tokens (ADR-0019, ADR-0021, docs/design/visual-identity.md).
  * The only place where raw color values are allowed. Everything else uses these tokens,
- * through Tailwind utilities (bg-background, text-accent-text…) or var(--token).
+ * through Tailwind utilities (bg-background, text-accent-text, h-control…) or var(--token).
  * Names follow shadcn/ui conventions so its components work unchanged.
  */
 @import "@fontsource-variable/inter";
+@import "@fontsource/architects-daughter";
 
 :root {
   color-scheme: light;
@@ -19,8 +20,16 @@
   --foreground: var(--jet-black);
   --muted: #f2eceb;
   --muted-foreground: #5e646b;
+  --hover: #e8dedc;
   --border: #d9d3d2;
   --input: #8a8f96;
+
+  /* Floating layers: a raised surface, a light border and a soft shadow */
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+  --popover-border: var(--border);
+  --elevation-popover: 0 4px 12px rgb(41 47 54 / 0.1), 0 1px 3px rgb(41 47 54 / 0.08);
+  --elevation-dialog: 0 12px 32px rgb(41 47 54 / 0.16), 0 2px 6px rgb(41 47 54 / 0.08);
 
   /* Accent: fill with dark content, strong variant for strokes and icons, text variant for text */
   --primary: var(--pumpkin-spice);
@@ -29,22 +38,51 @@
   --accent-text: #a84612;
   --ring: var(--accent-strong);
 
-  /* Status (standard for now) */
+  /* Status (standard) */
   --destructive: #c62828;
   --success: #2e7d32;
   --warning: #9a5b00;
   --info: #1565c0;
 
-  /* Plan view */
+  /* Plan view: colors (docs/design/plan-drawing.md) */
   --plan-paper: var(--snow);
   --plan-ink: var(--jet-black);
+  --plan-wall: var(--plan-ink);
   --plan-selection: var(--accent-strong);
   --plan-selection-text: var(--accent-text);
   --plan-handle-fill: var(--plan-paper);
   --plan-handle-stroke: var(--plan-ink);
+  --plan-hover: rgb(41 47 54 / 0.12);
+  --plan-guide: var(--muted-foreground);
+  --plan-invalid: var(--destructive);
   --plan-grain-opacity: 0.55;
 
-  --radius: 0;
+  /* Plan view: pen, in screen pixels whatever the zoom */
+  --plan-stroke-fine: 1;
+  --plan-stroke-medium: 1.5;
+  --plan-stroke-bold: 2;
+  --plan-handle-size: 8;
+  --plan-tick-size: 8;
+  --plan-extension-gap: 4;
+  --plan-extension-overshoot: 4;
+  --plan-hover-width: 6;
+  --plan-hatch-spacing: 6;
+  --plan-dash: 4 4;
+  --plan-font-label: "Architects Daughter", cursive;
+  --plan-font-dimension: "Inter Variable", ui-sans-serif, sans-serif;
+  --plan-text-dimension: 11px;
+  --plan-text-label: 14px;
+  --plan-text-room: 16px;
+
+  /* Stacking levels of floating layers, used as z-(--layer-…) */
+  --layer-drawer: 10;
+  --layer-popover: 20;
+  --layer-dialog: 30;
+  --layer-toast: 40;
+  --layer-tooltip: 50;
+
+  /* Shapes (ADR-0021): rounded controls, rounder floating layers */
+  --radius: 8px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -54,8 +92,12 @@
     --foreground: var(--snow);
     --muted: #262b32;
     --muted-foreground: #a9afb6;
+    --hover: #353c46;
     --border: #3a414a;
     --input: #6b727b;
+    --popover: #2a3038;
+    --elevation-popover: 0 4px 12px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
+    --elevation-dialog: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
     --accent-strong: var(--pumpkin-spice);
     --accent-text: var(--pumpkin-spice);
     --destructive: #ff7a7a;
@@ -64,6 +106,7 @@
     --info: #6cb6ff;
     --plan-paper: var(--jet-black);
     --plan-ink: #e8e2e1;
+    --plan-hover: rgb(232 226 225 / 0.18);
     --plan-grain-opacity: 0.35;
   }
 }
@@ -74,8 +117,12 @@
   --foreground: var(--snow);
   --muted: #262b32;
   --muted-foreground: #a9afb6;
+  --hover: #353c46;
   --border: #3a414a;
   --input: #6b727b;
+  --popover: #2a3038;
+  --elevation-popover: 0 4px 12px rgb(0 0 0 / 0.35), 0 1px 3px rgb(0 0 0 / 0.3);
+  --elevation-dialog: 0 12px 32px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.3);
   --accent-strong: var(--pumpkin-spice);
   --accent-text: var(--pumpkin-spice);
   --destructive: #ff7a7a;
@@ -84,12 +131,14 @@
   --info: #6cb6ff;
   --plan-paper: var(--jet-black);
   --plan-ink: #e8e2e1;
+  --plan-hover: rgb(232 226 225 / 0.18);
   --plan-grain-opacity: 0.35;
 }
 
 /*
- * Tailwind theme: the default palette, radii and shadows are removed, so only tokens exist
- * (`bg-red-500`, `rounded-lg` or `shadow-md` simply do not generate any CSS).
+ * Tailwind theme: the default palette, radii, shadows, animations and scales are removed,
+ * so only tokens exist (`bg-red-500`, `rounded-lg`, `p-5` or `text-3xl` simply do not
+ * generate any CSS). ADR-0019, ADR-0021.
  */
 @theme inline {
   --color-*: initial;
@@ -97,8 +146,12 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-hover: var(--hover);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover-border: var(--popover-border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent-strong: var(--accent-strong);
@@ -112,12 +165,69 @@
   --color-plan-ink: var(--plan-ink);
   --color-plan-selection: var(--plan-selection);
 
+  /* Spacing steps (padding, margin, gap, insets) and named sizes (w-, h-, size-…) */
+  --spacing: initial;
+  --spacing-*: initial;
+  --spacing-0: 0px;
+  --spacing-0\.5: 2px;
+  --spacing-1: 4px;
+  --spacing-1\.5: 6px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-icon: 16px;
+  --spacing-icon-lg: 20px;
+  --spacing-control-sm: 24px;
+  --spacing-control: 28px;
+  --spacing-bar: 40px;
+  --spacing-panel: 256px;
+  --spacing-drawer: 320px;
+  --spacing-dialog: 480px;
+  --container-*: initial;
+
+  /* Type scale: 13 px base */
+  --text-*: initial;
+  --text-sm: 12px;
+  --text-sm--line-height: 16px;
+  --text-base: 13px;
+  --text-base--line-height: 20px;
+  --text-lg: 15px;
+  --text-lg--line-height: 22px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 28px;
+  --text-2xl--line-height: 36px;
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
+  --leading-*: initial;
+  --tracking-*: initial;
+
+  --font-*: initial;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-plan: var(--plan-font-label);
+
+  /* Radii: sm for checkboxes and keys, md for controls, lg for menus and popovers,
+     xl for dialogs and floating panels; rounded-full for pills (switch, segmented control). */
   --radius-*: initial;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Elevation of floating layers only; the interface itself stays flat. No motion. */
   --shadow-*: initial;
+  --shadow-popover: var(--elevation-popover);
+  --shadow-dialog: var(--elevation-dialog);
   --inset-shadow-*: initial;
   --drop-shadow-*: initial;
-
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --animate-*: initial;
+  --ease-*: initial;
 }
 
 @layer base {
@@ -128,8 +238,31 @@
     color: var(--foreground);
   }
 
+  body {
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+  }
+
   * {
     border-color: var(--border);
+  }
+
+  /*
+   * No motion (ADR-0021): every state change is instantaneous. `!important` so that no
+   * utility or third-party style, whatever its layer or specificity, brings motion back.
+   */
+  *,
+  ::before,
+  ::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must win over every utility (ADR-0021) */
+    transition: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must win over every utility (ADR-0021) */
+    animation: none !important;
+  }
+
+  /* Lucide icons: one stroke width everywhere (visual-identity.md). */
+  svg.lucide {
+    stroke-width: 1.75;
   }
 
   :focus-visible {

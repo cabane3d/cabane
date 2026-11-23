@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Design tokens guard (ADR-0019): raw colors, arbitrary Tailwind colors, rounded corners and
-# shadows are forbidden outside packages/ui/src/theme.css. Use the tokens instead.
+# Design tokens guard (ADR-0019, ADR-0021): raw colors, arbitrary Tailwind values, rounded corners,
+# shadows and raw stacking numbers are forbidden outside packages/ui/src/theme.css. Use the tokens.
 set -euo pipefail
 
 root="$(git rev-parse --show-toplevel)"
@@ -15,6 +15,11 @@ patterns=(
   # Tailwind arbitrary values that bypass the tokens
   '\b[a-z-]+-\[(#|rgb|hsl|oklch|color:)'
   '\b(rounded|shadow|drop-shadow|inset-shadow)(-[a-z0-9]+)*-\['
+  # Arbitrary values that bypass the spacing, size, type and layer scales (ADR-0021):
+  # p-[13px], h-[30px], text-[15px], z-[5]… Use a scale step or add a token.
+  "(^|[[:space:]\"'\`:!])-?(p[xytrblse]?|m[xytrblse]?|gap(-[xy])?|space-[xy]|w|h|size|min-[wh]|max-[wh]|inset(-[xy])?|top|right|bottom|left|start|end|translate-[xy]|text|leading|tracking|font|z)-\["
+  # Raw stacking numbers: use z-(--layer-…)
+  "(^|[[:space:]\"'\`:!])-?z-[0-9]+\b"
 )
 
 files="$(git ls-files --cached --others --exclude-standard -- \
@@ -32,6 +37,6 @@ done
 
 if [ "$status" -ne 0 ]; then
   echo
-  echo "Raw colors, radii or shadows found. Use the design tokens from packages/ui/src/theme.css (ADR-0019)."
+  echo "Raw colors, arbitrary values, radii, shadows or z-index found. Use the design tokens from packages/ui/src/theme.css (ADR-0019, ADR-0021)."
 fi
 exit "$status"
