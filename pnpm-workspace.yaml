@@ -1,3 +1,10 @@
 packages:
   - packages/*
   - apps/*
+
+# Dependency install scripts. Platform binaries come from optional dependencies, so these
+# packages work without running their scripts: esbuild (Storybook) only verifies its binary,
+# msw (optional peer of Vitest's mocker) copies a service worker Cabane does not use.
+allowBuilds:
+  esbuild: false
+  msw: false

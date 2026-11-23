@@ -24,7 +24,7 @@ export function Workspace({ platform }: WorkspaceProps) {
       aria-label="Workspace"
       className="flex h-screen flex-col items-center justify-center gap-2 bg-background text-foreground"
     >
-      <h1 className="font-semibold text-3xl">Cabane</h1>
+      <h1 className="font-semibold text-2xl">Cabane</h1>
       {appInfo && (
         <p className="text-muted-foreground text-sm tabular-nums">Version {appInfo.version}</p>
       )}

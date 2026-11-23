@@ -1,6 +1,6 @@
 # Visual identity
 
-Cabane looks like a **professional tool with a slight handcrafted feel**, in the spirit of Excalidraw: a calm, neutral interface, and a plan that feels like drawing on coarse paper.
+Cabane looks like a **professional tool with a slight handcrafted feel**: a calm interface with the friendly, rounded shapes of today's design tools (Figma, Canva, Pinterest), around a plan that feels like drawing on coarse paper.
 
 Tokens are defined in [`packages/ui/src/theme.css`](../../packages/ui/src/theme.css), the only file where raw color values are allowed (ADR-0019). This document explains them.
 
@@ -18,7 +18,8 @@ Tokens are defined in [`packages/ui/src/theme.css`](../../packages/ui/src/theme.
 |---|---|---|---|
 | `background` | Snow `#FCF7F8` | `#1D2127` | Window background |
 | `foreground` | Jet Black `#292F36` | Snow `#FCF7F8` | Text, icons |
-| `muted` | `#F2ECEB` | `#262B32` | Secondary surfaces (hover, panels) |
+| `muted` | `#F2ECEB` | `#262B32` | Secondary surfaces (panels, active tab) |
+| `hover` | `#E8DEDC` | `#353C46` | Hovered buttons, tools and tabs; highlighted menu items |
 | `muted-foreground` | `#5E646B` | `#A9AFB6` | Secondary text, labels |
 | `border` | `#D9D3D2` | `#3A414A` | Separators (decorative) |
 | `input` | `#8A8F96` | `#6B727B` | Borders of interactive fields (≥ 3:1) |
@@ -27,6 +28,10 @@ Tokens are defined in [`packages/ui/src/theme.css`](../../packages/ui/src/theme.
 | `accent-strong` | `#D2601A` | Pumpkin Spice | Accent **strokes and icons** (active tool, selection) |
 | `accent-text` | `#A84612` | Pumpkin Spice | Accent **text** (selected dimension, links) |
 | `ring` | `accent-strong` | `accent-strong` | Keyboard focus outline |
+| `popover` / `popover-foreground` | `#FFFFFF` / `foreground` | `#2A3038` / `foreground` | Raised surface and content of floating layers (menus, popovers, drawer, dialogs, toasts) |
+| `popover-border` | `border` | `border` | Light border of floating layers |
+| `shadow-popover` | soft, small | soft, darker | Menus, selects, tooltips |
+| `shadow-dialog` | soft, large | soft, darker | Dialogs, floating panels, toasts |
 | `destructive`, `success`, `warning`, `info` | standard | standard | Status messages (to be refined later) |
 
 ### Why three oranges
@@ -48,8 +53,14 @@ In dark mode, Pumpkin Spice passes everywhere (6.5:1 on the background) and is u
 | `plan-selection-text` | `accent-text` | Pumpkin Spice | Dimensions of selected elements |
 | `plan-handle-fill` / `plan-handle-stroke` | paper / ink | paper / ink | Square selection handles |
 | `plan-grain-opacity` | 0.55 | 0.35 | Strength of the paper grain |
+| `plan-wall` | ink | ink | Wall fill (poché) |
+| `plan-hover` | ink at 12 % | ink at 18 % | Hover halo |
+| `plan-guide` | `muted-foreground` | `muted-foreground` | Dashed snapping guides |
+| `plan-invalid` | `destructive` | `destructive` | Outline and cross-hatching of invalid elements |
 
 The renderer reads these tokens with `getComputedStyle(document.documentElement)` and re-reads them when the theme changes; it never hard-codes colors.
+
+Drawing conventions (walls, dimensions, guides, hover, invalid elements, line widths, plan text) and their tokens are described in [`plan-drawing.md`](plan-drawing.md).
 
 ### Paper texture
 
@@ -61,23 +72,99 @@ The renderer reads these tokens with `getComputedStyle(document.documentElement)
 
 ## States
 
-- **Active tool**: icon in `accent-strong`, plus a 2 px `accent-strong` marker on its left edge. The marker makes the state visible without relying on color alone.
+- **Active tool**: a filled `primary` tile with a dark icon. The filled shape stands out from the bar, so the state does not rely on hue alone.
 - **Selection in the plan**: element in `plan-selection`, with square handles (`plan-handle-*`) at its ends or corners.
 - **Focus**: 2 px `ring` outline, offset 2 px, on every focusable element (`:focus-visible`).
-- **Hover**: `muted` background.
+- **Hover**: `hover` background, visibly darker than `muted` so it reads on every surface, including floating layers.
+- **Disabled**: 50 % opacity and no hover; disabled controls stay readable but are exempt from contrast rules.
+- **Invalid field**: `destructive` border, plus an error message and an icon (never the border alone).
+
+Component-level states are listed in [`components.md`](components.md).
 
 ## Typography
 
 - **Inter** (variable), bundled with the app (`@fontsource-variable/inter`, OFL-1.1): no network font, the app works offline.
+- **Architects Daughter** (`@fontsource/architects-daughter`, OFL-1.1), bundled, for **labels and room names in the plan only** (`font-plan`, `--plan-font-label`). Never in the interface around the plan.
 - **Tabular figures** (`tabular-nums`) for every number that changes: dimensions, coordinates, zoom.
-- Two weights in the interface: regular (400) and semibold (600).
+- Two weights: regular (400, `font-normal`) and semibold (600, `font-semibold`). Other weights do not exist.
+
+### Type scale (ADR-0021)
+
+| Utility | Size / line height | Use |
+|---|---|---|
+| `text-sm` | 12 / 16 px | Field labels, status bar, tooltips, keyboard shortcuts |
+| `text-base` | **13 / 20 px** | Default: controls, menus, values, body text |
+| `text-lg` | 15 / 22 px | Panel and dialog titles |
+| `text-xl` | 20 / 28 px | Empty states |
+| `text-2xl` | 28 / 36 px | Welcome screen title |
+
+Any other size (`text-xs`, `text-3xl`, `text-[15px]`) does not exist.
 
 ## Shapes, density and icons
 
-- **Square corners** everywhere: radii are removed from the Tailwind theme.
-- **No shadows**: elevation is shown with borders and `muted` surfaces. Shadow utilities are removed from the Tailwind theme.
-- **Airy density** for now: comfortable spacing, controls at least 32 px high.
-- **Icons**: Lucide (`lucide-react`, ISC), 16–20 px, stroke width 1.75. Installed with the first component that needs an icon.
+- **Rounded corners** (ADR-0021), from four steps only; Tailwind's other radii do not exist:
+
+  | Utility | Radius | Use |
+  |---|---|---|
+  | `rounded-sm` | 4 px | Checkboxes, small marks |
+  | `rounded-md` | 8 px | Buttons, fields, tool tiles, menu items, tooltips |
+  | `rounded-lg` | 12 px | Menus, popovers, selects, toasts |
+  | `rounded-xl` | 16 px | Dialogs, drawers |
+  | `rounded-full` | pill | Switch, segmented control, tabs, scrollbar thumbs |
+
+- **Flat interface, raised floating layers**: buttons, fields and panels have no shadow. Only floating layers do, with `shadow-popover` or `shadow-dialog`. Other shadow utilities do not exist.
+- **The plan keeps its conventions**: square selection handles, crisp strokes ([`plan-drawing.md`](plan-drawing.md)).
+- **Compact density** (ADR-0021): controls 28 px high (`h-control`), 24 px for the small size (`h-control-sm`), base text 13 px. Cabane targets mouse and keyboard.
+- **Icons**: Lucide (`lucide-react`, ISC), 16 px in controls (`size-icon`), 20 px in the tool bar (`size-icon-lg`), stroke width 1.75. Icon-only buttons always have an accessible name and a tooltip.
+
+### Spacing and sizes (ADR-0021)
+
+Spacing steps (padding, margin, gap, insets): `0` 0 · `0.5` 2 px · `1` 4 px · `1.5` 6 px · `2` 8 px · `3` 12 px · `4` 16 px · `6` 24 px · `8` 32 px · `12` 48 px. Other steps (`p-5`, `gap-2.5`, `p-[13px]`) do not exist.
+
+Named sizes, usable with `w-`, `h-`, `size-`, `min-w-`, `max-w-`…:
+
+| Token | Value | Use |
+|---|---|---|
+| `icon` | 16 px | Icons in controls |
+| `icon-lg` | 20 px | Tool bar icons |
+| `control-sm` | 24 px | Small controls (status bar, inline buttons in fields) |
+| `control` | 28 px | Default control height, icon buttons |
+| `bar` | 40 px | Top bar height, tool bar width |
+| `panel` | 256 px | Properties panel width |
+| `drawer` | 320 px | Drawer width |
+| `dialog` | 480 px | Default dialog width |
+
+Usual rhythm: 4 px inside a control, 8 px between related controls, 12 px panel padding, 16 px between groups.
+
+### Layers and elevation
+
+A floating layer has a raised `popover` surface, a 1 px `popover-border` border, rounded corners and a soft shadow (`shadow-popover` for small layers, `shadow-dialog` for large ones), which separate it from the interface and from the plan paper. There is no veil behind modal dialogs. Tooltips are inverted: `foreground` background, `background` text.
+
+Stacking order uses named levels, through `z-(--layer-…)`; raw `z-10`, `z-50` are rejected by the token guard:
+
+| Level | Value | Elements |
+|---|---|---|
+| `--layer-drawer` | 10 | Drawers |
+| `--layer-popover` | 20 | Menus, selects, popovers |
+| `--layer-dialog` | 30 | Dialogs |
+| `--layer-toast` | 40 | Toasts |
+| `--layer-tooltip` | 50 | Tooltips |
+
+### Motion
+
+**None** (ADR-0021). Opening, closing and state changes are instantaneous. The base layer of `theme.css` disables CSS transitions and animations, and Tailwind's animation utilities do not exist.
+
+### Cursors
+
+| Cursor | When |
+|---|---|
+| `default` | Interface, Select tool over empty paper |
+| `pointer` | Never on buttons (desktop convention); only on links |
+| `move` | Over a selected element that can be moved |
+| `crosshair` | Drawing tools (Wall, Room, Dimension) in the plan |
+| `grab` / `grabbing` | Panning the plan or orbiting the 3D view |
+| resize cursors | Over a selection handle, oriented along the handle's axis |
+| `not-allowed` | Over a disabled control |
 
 ## Logo
 
@@ -110,12 +197,15 @@ The logo is a modern house, in deliberate contrast with the name *cabane* (hut):
 ## Accessibility
 
 - WCAG 2.2 **AA**: text ≥ 4.5:1, large text and non-text elements (icons, field borders, selection strokes) ≥ 3:1. Every token pair above has been checked.
-- **Never color alone**: states also change shape (active tool marker, selection handles, focus outline).
+- **Never color alone**: states also change shape or weight (filled active tool, selected tab fill and weight, selection handles, focus outline).
 - Every interactive element is reachable and usable with the keyboard, with a visible focus.
 - The interface follows the system light or dark setting by default; `data-theme="light"` or `"dark"` on the root element forces one.
 
 ## Rules for code
 
 - Use only tokens: Tailwind utilities (`bg-background`, `text-accent-text`, `border-input`…) or `var(--token)`.
-- No raw colors, arbitrary Tailwind colors (`bg-[#fff]`), radii or shadows outside `theme.css`. `scripts/check-design-tokens.sh` (part of `pnpm lint`) enforces it, and Tailwind no longer generates its default palette, radii or shadows.
-- A new need (a new state, a new plan element) means a new token in `theme.css`, documented here.
+- No raw colors, arbitrary Tailwind colors (`bg-[#fff]`), radii or shadows outside `theme.css`. `scripts/check-design-tokens.sh` (part of `pnpm lint`) enforces it, and Tailwind only generates the palette, radii and shadows defined there.
+- Only the scales of ADR-0021 exist: spacing, named sizes, text sizes and weights. Arbitrary values (`p-[13px]`, `h-[30px]`, `text-[15px]`) and raw stacking numbers (`z-50`) are rejected by `scripts/check-design-tokens.sh`.
+- No transitions or animations.
+- A new need (a new state, a new plan element, a new size) means a new token in `theme.css`, documented here.
+- Build with the components of `packages/ui/src/components/` ([`components.md`](components.md)) before writing new markup; check them in Storybook (`pnpm storybook`).
