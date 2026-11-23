@@ -8,3 +8,8 @@ packages:
 allowBuilds:
   esbuild: false
   msw: false
+
+# glob <= 14.0.1 has a moderate advisory (GHSA-3g3m-2fjr-6pw4). Storybook's docgen plugin still
+# asks for glob ^13; Storybook builds with its docgen working on glob 14.
+overrides:
+  "@joshwooding/vite-plugin-react-docgen-typescript>glob": ^14.0.6
