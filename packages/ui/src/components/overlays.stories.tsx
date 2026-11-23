@@ -54,7 +54,7 @@ const CatalogDrawerDemo = () => {
         <div className="flex w-bar flex-col items-center border-r py-1">
           <DrawerTrigger asChild>
             <IconButton
-              label="Catalog"
+              label="Catalog button"
               icon={<Armchair />}
               tooltipSide="right"
               aria-pressed={open}

@@ -38,7 +38,7 @@ Agents (coder, test-writer, reviewer) must comply with accepted ADRs. A change t
 | [0018](0018-plain-gherkin-feature-files.md)                | Plain Gherkin `.feature` files                               | Accepted |
 | [0019](0019-design-system-and-tokens.md) | Design system and tokens | Accepted (amended by 0021) |
 | [0020](0020-review-on-github-with-maintainer-gate.md) | Review on the pull request, with a maintainer gate | Accepted |
-| [0021](0021-design-system-scales-density-and-components.md) | Design system: shapes, scales, density, motion and components | Proposed |
+| [0021](0021-design-system-scales-density-and-components.md) | Design system: shapes, scales, density, motion and components | Accepted |
 
 ## Template
 

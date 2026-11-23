@@ -1,6 +1,6 @@
 # ADR-0021: Design system: shapes, scales, density, motion and components
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: 2026-11-09
 - **Amends**: ADR-0019
 

@@ -431,7 +431,7 @@ function MainWindow({ catalogOpen = false }: { catalogOpen?: boolean }) {
             ))}
             <ToolbarSeparator />
             <ToolButton
-              label="Catalog"
+              label="Catalog button"
               icon={<Armchair />}
               active={catalog}
               onClick={() => setCatalog(!catalog)}

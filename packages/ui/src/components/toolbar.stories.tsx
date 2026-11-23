@@ -31,7 +31,7 @@ const ToolBarDemo = () => {
           />
         ))}
         <ToolbarSeparator />
-        <ToolButton label="Catalog" icon={<Armchair />} active={false} />
+        <ToolButton label="Catalog button" icon={<Armchair />} active={false} />
       </Toolbar>
     </div>
   );
