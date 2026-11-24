@@ -1,3 +1,5 @@
+export type { AppProps } from './app/app';
+export { App } from './app/app';
 export type { ButtonProps } from './components/button';
 export { Button, buttonVariants } from './components/button';
 export { Checkbox } from './components/checkbox';
@@ -65,5 +67,3 @@ export { ToolButton, Toolbar, ToolbarSeparator } from './components/toolbar';
 export type { TooltipProps } from './components/tooltip';
 export { Tooltip, TooltipProvider } from './components/tooltip';
 export { cn } from './lib/cn';
-export type { WorkspaceProps } from './Workspace';
-export { Workspace } from './Workspace';

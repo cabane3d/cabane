@@ -5,6 +5,8 @@
 #   - every @unit scenario is referenced by at least one Vitest test (tests/** or *.test.ts(x)).
 # Scenarios tagged @e2e, @electron or @visual run through playwright-bdd, whose generation fails
 # when a step has no definition, so they need no extra reference.
+# A Feature or scenario tagged @wip is written but not implemented yet (ADR-0022): its identifiers
+# still count for uniqueness, but it needs no test, and Playwright does not run it.
 # Usage: scripts/factory/check-scenario-coverage.sh [spec.feature...]   (defaults to all specs)
 set -euo pipefail
 
@@ -19,9 +21,12 @@ fi
 [ "${#specs[@]}" -gt 0 ] || { echo "No spec found."; exit 0; }
 
 # One line per scenario: "<file>:<line>\t<tags>", tags gathered from the tag lines above it.
+# Feature tags apply to every scenario of the file.
 scenarios="$(awk '
+  FNR == 1 { tags = ""; feature = "" }
   /^[[:space:]]*@/ { tags = tags " " $0; next }
-  /^[[:space:]]*(Scenario|Scenario Outline|Example):/ { gsub(/[[:space:]]+/, " ", tags); print FILENAME ":" FNR "\t" tags; tags = ""; next }
+  /^[[:space:]]*Feature:/ { feature = tags; tags = ""; next }
+  /^[[:space:]]*(Scenario|Scenario Outline|Example):/ { tags = feature " " tags; gsub(/[[:space:]]+/, " ", tags); print FILENAME ":" FNR "\t" tags; tags = ""; next }
   /^[[:space:]]*(#.*)?$/ { next }
   { tags = "" }
 ' "${specs[@]}")"
@@ -38,6 +43,7 @@ while IFS=$'\t' read -r location tags; do
   fi
   id="${found[0]}"
   ids+=("$id")
+  grep -qE '@wip\b' <<<"$tags" && continue
   if ! grep -qE '@(unit|e2e|electron|visual|collab)\b' <<<"$tags"; then
     echo "$location: $id has no level tag (@unit, @e2e, @electron, @visual)"
     errors=$((errors + 1))

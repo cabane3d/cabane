@@ -36,6 +36,29 @@ Its categories, then the furniture of the chosen category:
 │    │ Doors, windows  › │                          │    │ …                       │
 ```
 
+## Start screen
+
+Shown when the application opens, before any project is open (`specs/project/new-project.feature`, `specs/app/start-screen.feature`).
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│                         Cabane                                               │
+│                         Version 0.1.0                                        │
+│                                                                              │
+│                         [ New project ]   [ Open project ]                   │
+│                                                                              │
+│                         Recent projects                                      │
+│                         Kitchen      20 Nov 2026   ~/Documents/Cabane        │
+│                         Bathroom     12 Nov 2026   ~/Documents/Cabane        │
+│                         Garage        3 Nov 2026   ~/Desktop                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+- At most 5 recent projects, the most recent first; "No recent projects" when the list is empty.
+- The folder is shortened with `~` for the home folder; the full path of the file is in a tooltip.
+
 ## Layout decisions
 
 - **One view at a time**: the plan view and the 3D view are never shown together. The view switcher in the top bar toggles between them. A split view may come later.
@@ -50,9 +73,14 @@ Specs use these exact names. In the UI, each zone exposes the same name as its a
 
 | Name | Role | Description |
 |---|---|---|
-| Main window | — | The whole application window |
+| Start screen | `main` | Shown at startup, before any project is open: application name and version, New project, Open project, Recent projects |
+| New project | `button` | On the Start screen, creates a new project and shows it in the Main window |
+| Open project | `button` | On the Start screen, picks a project file and opens it |
+| Recent projects | `list` | On the Start screen, the last 5 projects opened or saved; each item is a `button` named after the project |
+| Remove / Keep | `button` | In the message shown when the file of a recent project cannot be found: remove it from Recent projects, or keep it |
+| Main window | `main` | The whole application window once a project is open |
 | Top bar | `banner` | Menu, project name, undo, redo, view switcher |
-| Project name | — | Name of the open project, `Untitled` until saved |
+| Project name | — | Name of the open project, stored in the project. `Untitled` for a new project; on its first save, an untitled project takes the name of its file |
 | Undo / Redo | `button` | Undo or redo the last document change |
 | View switcher | `radiogroup` | Choice between `2D` and `3D` |
 | Tool bar | `toolbar` | Creation and editing tools; one tool is active at a time |

@@ -10,5 +10,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "yjs": "^13.6.33"
   }
 }
