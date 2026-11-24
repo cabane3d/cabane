@@ -9,7 +9,8 @@ function bddProject(tag: '@e2e' | '@electron' | '@visual') {
   return defineBddConfig({
     features: 'specs/**/*.feature',
     steps: ['tests/acceptance/steps/**/*.ts', 'tests/support/fixtures.ts'],
-    tags: tag,
+    // @wip specs are written but not implemented yet (ADR-0022).
+    tags: `${tag} and not @wip`,
     outputDir: `.features-gen/${tag.slice(1)}`,
   });
 }
