@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { deleteLevel } from './commands';
-import { createProject, type LevelId, levelMap, projectDocument } from './project';
+import { CommandError, type CommandErrorCode, deleteLevel } from './commands';
+import { createProject, type LevelId, levelMap, type Project, projectDocument } from './project';
 import { mm } from './units';
 
 /** A new project with a second level, added outside any command (no command adds levels yet). */
@@ -18,6 +18,18 @@ function projectWithTwoLevels() {
     ]);
   });
   return { project, document };
+}
+
+/** Asserts that deleting the level is refused with a {@link CommandError} of the given code. */
+function expectRefused(project: Project, levelId: LevelId, code: CommandErrorCode) {
+  let error: unknown;
+  try {
+    deleteLevel(project, levelId);
+  } catch (caught) {
+    error = caught;
+  }
+  expect(error).toBeInstanceOf(CommandError);
+  expect(error).toHaveProperty('code', code);
 }
 
 describe('deleteLevel', () => {
@@ -51,6 +63,41 @@ describe('deleteLevel', () => {
     document.undoManager.undo();
 
     expect(project.levels.map((level) => level.name)).toEqual(['Level 0', 'Level 1']);
+  });
+
+  it('leaves a new project untouched when it refuses to delete the last level', () => {
+    const project = createProject();
+    const levelIds = project.levels.map((level) => level.id);
+    const [onlyLevel] = levelIds;
+    expect(onlyLevel).toBeDefined();
+
+    expectRefused(project, onlyLevel ?? ('missing' as LevelId), 'last-level');
+
+    expect(project.hasUnsavedChanges).toBe(false);
+    expect(project.canUndo).toBe(false);
+    expect(project.levels.map((level) => level.id)).toEqual(levelIds);
+  });
+
+  it('leaves a new project untouched when it refuses an unknown level', () => {
+    const project = createProject();
+    const levelIds = project.levels.map((level) => level.id);
+
+    expectRefused(project, 'missing' as LevelId, 'unknown-level');
+
+    expect(project.hasUnsavedChanges).toBe(false);
+    expect(project.canUndo).toBe(false);
+    expect(project.levels.map((level) => level.id)).toEqual(levelIds);
+  });
+
+  it('leaves a project with several levels untouched when it refuses an unknown level', () => {
+    // The setup adds a level outside any command: the project already has unsaved changes.
+    const { project } = projectWithTwoLevels();
+    const levelIds = project.levels.map((level) => level.id);
+
+    expectRefused(project, 'missing' as LevelId, 'unknown-level');
+
+    expect(project.canUndo).toBe(false);
+    expect(project.levels.map((level) => level.id)).toEqual(levelIds);
   });
 
   it('rejects a project that core did not create', () => {
