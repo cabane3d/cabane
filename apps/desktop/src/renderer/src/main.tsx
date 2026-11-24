@@ -1,5 +1,5 @@
 import { createFakePlatform, type Platform } from '@cabane3d/platform';
-import { Workspace } from '@cabane3d/ui';
+import { App } from '@cabane3d/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './main.css';
@@ -16,6 +16,6 @@ if (!root) throw new Error('Missing #root element');
 
 createRoot(root).render(
   <StrictMode>
-    <Workspace platform={resolvePlatform()} />
+    <App platform={resolvePlatform()} />
   </StrictMode>,
 );

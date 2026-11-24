@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { app, BrowserWindow, type IpcMainInvokeEvent, ipcMain, shell } from 'electron';
+import { version as appVersion } from '../../package.json';
 import { type IpcChannel, ipcContract } from '../shared/ipc';
 
 const rendererDevUrl = process.env.ELECTRON_RENDERER_URL;
@@ -59,7 +60,9 @@ function handle<C extends IpcChannel>(
 }
 
 function registerIpcHandlers(): void {
-  handle('app:get-info', () => ({ name: app.getName(), version: app.getVersion() }));
+  // The version declared by the desktop package. app.getVersion() only reads it in a packaged
+  // app: launched as `electron out/main/index.js` (dev, tests), it returns Electron's version.
+  handle('app:get-info', () => ({ name: app.getName(), version: appVersion }));
 }
 
 app.whenReady().then(() => {
