@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Fails if any installed dependency has a license that is not known to be compatible with
 // AGPL-3.0-or-later (ADR-0001). Extend ALLOWED only after checking compatibility.
-import { execFileSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 
 const ALLOWED = new Set([
   '0BSD',
@@ -45,7 +45,12 @@ function isAllowed(expression) {
     .some((option) => option.split(/\s+AND\s+/).every((part) => ALLOWED.has(part.trim())));
 }
 
-const output = execFileSync('pnpm', ['licenses', 'list', '--json'], { encoding: 'utf8' });
+// Run through the shell: on Windows `pnpm` is a `.cmd` shim that Node cannot start directly.
+// The command is a constant string, so the shell never sees external input.
+const output = execSync('pnpm licenses list --json', {
+  encoding: 'utf8',
+  maxBuffer: 64 * 1024 * 1024,
+});
 const byLicense = JSON.parse(output);
 
 const violations = [];
