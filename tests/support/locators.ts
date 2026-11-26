@@ -24,3 +24,18 @@ export function topBar(page: Page) {
 export function levelTabs(page: Page) {
   return page.getByRole('tablist', { name: 'Level tabs', exact: true });
 }
+
+/** The Plan view of the Main window, where the Tool bar floats (docs/design/main-window.md). */
+export function planView(page: Page) {
+  return page.getByRole('region', { name: 'Plan view', exact: true });
+}
+
+/** The Tool bar, on the left of the Plan view. */
+export function toolBar(page: Page) {
+  return planView(page).getByRole('toolbar', { name: 'Tool bar', exact: true });
+}
+
+/** The Select tool button of the Tool bar (docs/api/tool-bar.md). */
+export function selectTool(page: Page) {
+  return toolBar(page).getByRole('button', { name: 'Select tool', exact: true });
+}
