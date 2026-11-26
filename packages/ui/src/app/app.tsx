@@ -1,6 +1,7 @@
 import { createProject, type Project } from '@cabane3d/core';
 import type { Platform } from '@cabane3d/platform';
 import { useEffect, useState } from 'react';
+import { TooltipProvider } from '../components/tooltip';
 import { MainWindow } from './main-window';
 import { StartScreen } from './start-screen';
 
@@ -23,6 +24,13 @@ export function App({ platform }: AppProps) {
     };
   }, [platform]);
 
-  if (project) return <MainWindow project={project} />;
-  return <StartScreen version={version} onNewProject={() => setProject(createProject())} />;
+  return (
+    <TooltipProvider>
+      {project ? (
+        <MainWindow project={project} />
+      ) : (
+        <StartScreen version={version} onNewProject={() => setProject(createProject())} />
+      )}
+    </TooltipProvider>
+  );
 }
