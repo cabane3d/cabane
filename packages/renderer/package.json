@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit -p ."
   },
   "dependencies": {
-    "@cabane3d/core": "workspace:*"
+    "@cabane3d/core": "workspace:*",
+    "@cabane3d/geometry": "workspace:*"
   },
   "devDependencies": {
     "jsdom": "^31.0.0"
