@@ -1,7 +1,7 @@
 ---
 name: coder
 description: Implements a Cabane feature until its frozen acceptance tests pass and `pnpm check` is green. Used by /implement after test-writer, and again to address reviewer findings.
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Skill
 disallowedTools: Agent
 model: claude-opus-5-5
 effort: high
@@ -42,6 +42,7 @@ The orchestrator gives you:
 2. Read the spec, to understand intent; the tests are the contract.
 3. Read the failing tests and run them to see the actual failures.
 4. Explore the existing code. Reuse existing commands, types, helpers and patterns before creating new ones.
+5. For any HTML/CSS or client-side JS work (UI components, styles, layout, browser APIs, forms, accessibility, performance), invoke the `modern-web-guidance:modern-web-guidance` skill **first**, before writing that code, and follow its guidance for modern web APIs. It never overrides the project rules: ADRs, `AGENTS.md`, the design tokens (ADR-0019, ADR-0021) and the Electron security settings (ADR-0010) take precedence. Skip it for work with no web/UI code (`core`, `geometry`, `importers`, `ai`).
 
 ## Rules
 
