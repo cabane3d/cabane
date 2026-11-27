@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 
 /** Classes of the field box, shared by `Input`, `NumericField` and `SelectTrigger`. */
 export const fieldBoxClassName = cn(
-  'flex h-control w-full min-w-0 items-center rounded-md border border-input bg-background px-2 text-base text-foreground',
+  'flex min-h-control w-full min-w-0 items-center rounded-md border border-input bg-background px-2 text-base text-foreground',
   'placeholder:text-muted-foreground aria-invalid:border-destructive',
   'disabled:cursor-not-allowed disabled:opacity-50',
 );

@@ -26,7 +26,7 @@ export function SegmentedControlItem({
   return (
     <RadioGroupPrimitive.Item
       className={cn(
-        'inline-flex h-control-sm min-w-control items-center justify-center gap-1.5 rounded-full px-3 text-base text-foreground [&_svg]:size-icon',
+        'inline-flex min-h-control-sm min-w-control items-center justify-center gap-1.5 rounded-full px-3 text-base text-foreground [&_svg]:size-icon',
         'enabled:hover:bg-background data-[state=checked]:bg-primary data-[state=checked]:shadow-popover data-[state=checked]:font-semibold data-[state=checked]:text-primary-foreground',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,

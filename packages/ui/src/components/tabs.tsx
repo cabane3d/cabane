@@ -14,7 +14,7 @@ export function TabsTrigger({ className, ...props }: ComponentProps<typeof TabsP
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        'inline-flex h-control items-center gap-1.5 rounded-full px-3 text-base text-muted-foreground [&_svg]:size-icon',
+        'inline-flex min-h-control items-center gap-1.5 rounded-full px-3 text-base text-muted-foreground [&_svg]:size-icon',
         'enabled:hover:bg-hover enabled:hover:text-foreground data-[state=active]:bg-muted data-[state=active]:font-semibold data-[state=active]:text-foreground',
         'disabled:cursor-not-allowed disabled:opacity-50',
         className,

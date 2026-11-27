@@ -17,8 +17,8 @@ export const buttonVariants = cva(
         destructive: 'border-destructive bg-background text-destructive enabled:hover:bg-hover',
       },
       size: {
-        default: 'h-control px-3 text-base',
-        sm: 'h-control-sm px-2 text-sm',
+        default: 'min-h-control px-3 text-base',
+        sm: 'min-h-control-sm px-2 text-sm',
         icon: 'size-control',
         'icon-sm': 'size-control-sm',
       },

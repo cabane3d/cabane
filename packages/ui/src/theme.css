@@ -136,6 +136,44 @@
 }
 
 /*
+ * More contrast (ADR-0024): separators, field borders and secondary text get stronger values.
+ * Same token names, in both themes.
+ */
+@media (prefers-contrast: more) {
+  :root {
+    --muted-foreground: #3d434a;
+    --border: #6b727b;
+    --input: #4a5058;
+    --popover-border: #4a5058;
+    --hover: #d4c8c5;
+  }
+
+  :root:not([data-theme="light"]) {
+    --muted-foreground: #d4d8dc;
+    --border: #8a929b;
+    --input: #aeb4bb;
+    --popover-border: #aeb4bb;
+    --hover: #454d58;
+  }
+
+  :root[data-theme="light"] {
+    --muted-foreground: #3d434a;
+    --border: #6b727b;
+    --input: #4a5058;
+    --popover-border: #4a5058;
+    --hover: #d4c8c5;
+  }
+
+  :root[data-theme="dark"] {
+    --muted-foreground: #d4d8dc;
+    --border: #8a929b;
+    --input: #aeb4bb;
+    --popover-border: #aeb4bb;
+    --hover: #454d58;
+  }
+}
+
+/*
  * Tailwind theme: the default palette, radii, shadows, animations and scales are removed,
  * so only tokens exist (`bg-red-500`, `rounded-lg`, `p-5` or `text-3xl` simply do not
  * generate any CSS). ADR-0019, ADR-0021.
@@ -165,41 +203,42 @@
   --color-plan-ink: var(--plan-ink);
   --color-plan-selection: var(--plan-selection);
 
-  /* Spacing steps (padding, margin, gap, insets) and named sizes (w-, h-, size-…) */
+  /* Spacing steps (padding, margin, gap, insets) and named sizes (w-, h-, size-…), in rem so that
+     they follow the OS text scale (ADR-0023). Values equal the former pixels at 16 px. */
   --spacing: initial;
   --spacing-*: initial;
   --spacing-0: 0px;
-  --spacing-0\.5: 2px;
-  --spacing-1: 4px;
-  --spacing-1\.5: 6px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-6: 24px;
-  --spacing-8: 32px;
-  --spacing-12: 48px;
-  --spacing-icon: 16px;
-  --spacing-icon-lg: 20px;
-  --spacing-control-sm: 24px;
-  --spacing-control: 28px;
-  --spacing-bar: 40px;
-  --spacing-panel: 256px;
-  --spacing-drawer: 320px;
-  --spacing-dialog: 480px;
+  --spacing-0\.5: 0.125rem;
+  --spacing-1: 0.25rem;
+  --spacing-1\.5: 0.375rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-12: 3rem;
+  --spacing-icon: 1rem;
+  --spacing-icon-lg: 1.25rem;
+  --spacing-control-sm: 1.5rem;
+  --spacing-control: 1.75rem;
+  --spacing-bar: 2.5rem;
+  --spacing-panel: 16rem;
+  --spacing-drawer: 20rem;
+  --spacing-dialog: 30rem;
   --container-*: initial;
 
-  /* Type scale: 13 px base */
+  /* Type scale: 13 px base at the default text scale (ADR-0023) */
   --text-*: initial;
-  --text-sm: 12px;
-  --text-sm--line-height: 16px;
-  --text-base: 13px;
-  --text-base--line-height: 20px;
-  --text-lg: 15px;
-  --text-lg--line-height: 22px;
-  --text-xl: 20px;
-  --text-xl--line-height: 28px;
-  --text-2xl: 28px;
-  --text-2xl--line-height: 36px;
+  --text-sm: 0.75rem;
+  --text-sm--line-height: 1rem;
+  --text-base: 0.8125rem;
+  --text-base--line-height: 1.25rem;
+  --text-lg: 0.9375rem;
+  --text-lg--line-height: 1.375rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
   --font-weight-*: initial;
   --font-weight-normal: 400;
   --font-weight-semibold: 600;
@@ -268,5 +307,24 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  /*
+   * Forced colors (Windows High Contrast, ADR-0024): backgrounds are replaced by system colors,
+   * so a state shown by a fill alone would disappear. Each on/selected/highlighted state gets an
+   * outline in the system Highlight color as well.
+   */
+  @media (forced-colors: active) {
+    [aria-pressed="true"],
+    [aria-selected="true"],
+    [role="tab"][data-state="active"],
+    [role="switch"][data-state="checked"],
+    [role="radio"][data-state="checked"],
+    [role="checkbox"][data-state="checked"],
+    [role="checkbox"][data-state="indeterminate"],
+    [data-highlighted] {
+      outline: 2px solid Highlight;
+      outline-offset: -2px;
+    }
   }
 }

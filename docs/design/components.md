@@ -36,7 +36,7 @@ Its toolbar has a light/dark switch and an accessibility panel (axe); review eve
 
 | Component | Base | Variants and notes |
 |---|---|---|
-| `Button` | `button` | `primary` (`primary` fill, `primary-foreground` text; one per dialog or zone), `secondary` (`background`, `input` border), `ghost` (transparent, hover `muted`), `destructive` (`destructive` border and text). Sizes `default` (28 px) and `sm` (24 px). Optional leading icon. |
+| `Button` | `button` | `primary` (`primary` fill, `primary-foreground` text; one per dialog or zone), `secondary` (`background`, `input` border), `ghost` (transparent, hover `muted`), `destructive` (`destructive` border and text). Sizes `default` (at least 28 px) and `sm` (at least 24 px), which grow with the text scale (ADR-0023). Optional leading icon. |
 | `IconButton` | `Button` + `Tooltip` | Same width and height (`size-control` or `size-control-sm`), `ghost` by default. Requires `label` (accessible name and tooltip) and accepts `shortcut`. |
 | `Kbd` | `kbd` | Keyboard shortcut, `text-sm`, `muted-foreground`, in tooltips and menus. |
 

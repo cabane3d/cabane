@@ -100,6 +100,8 @@ Component-level states are listed in [`components.md`](components.md).
 
 Any other size (`text-xs`, `text-3xl`, `text-[15px]`) does not exist.
 
+Sizes are defined in `rem` in `theme.css` (the pixel values above are those at the default 16 px root), so the interface follows the operating system text scale (ADR-0023). The renderer declares `<meta name="text-scale" content="scale">`, and nothing ever sets `font-size` on `html` or `:root`. Components use `min-h-control` and `min-h-bar`, never a fixed height, so scaled text is not clipped. The plan keeps its `--plan-*` sizes in screen pixels.
+
 ## Shapes, density and icons
 
 - **Rounded corners** (ADR-0021), from four steps only; Tailwind's other radii do not exist:
@@ -114,7 +116,7 @@ Any other size (`text-xs`, `text-3xl`, `text-[15px]`) does not exist.
 
 - **Flat interface, raised floating layers**: buttons, fields and panels have no shadow. Only floating layers do, with `shadow-popover` or `shadow-dialog`. Other shadow utilities do not exist.
 - **The plan keeps its conventions**: square selection handles, crisp strokes ([`plan-drawing.md`](plan-drawing.md)).
-- **Compact density** (ADR-0021): controls 28 px high (`h-control`), 24 px for the small size (`h-control-sm`), base text 13 px. Cabane targets mouse and keyboard.
+- **Compact density** (ADR-0021): controls at least 28 px high (`min-h-control`), 24 px for the small size (`min-h-control-sm`), base text 13 px, all in `rem` (ADR-0023). Cabane targets mouse and keyboard.
 - **Icons**: Lucide (`lucide-react`, ISC), 16 px in controls (`size-icon`), 20 px in the tool bar (`size-icon-lg`), stroke width 1.75. Icon-only buttons always have an accessible name and a tooltip.
 
 ### Spacing and sizes (ADR-0021)
@@ -209,3 +211,9 @@ The logo is a modern house, in deliberate contrast with the name *cabane* (hut):
 - No transitions or animations.
 - A new need (a new state, a new plan element, a new size) means a new token in `theme.css`, documented here.
 - Build with the components of `packages/ui/src/components/` ([`components.md`](components.md)) before writing new markup; check them in Storybook (`pnpm storybook`).
+
+## Contrast preferences and forced colors (ADR-0024)
+
+- `prefers-contrast: more` strengthens `border`, `input`, `muted-foreground`, `popover-border` and `hover` in both themes (same token names).
+- In `forced-colors: active` (Windows High Contrast), backgrounds disappear: every on, selected or highlighted state (`aria-pressed`, selected tab, checked switch, checkbox or radio, highlighted menu item) also gets a 2 px `Highlight` outline from the base layer of `theme.css`. The scroll thumb gets a border. Focus rings stay outline-based.
+- There is no motion, so `prefers-reduced-motion` needs no handling. Any future motion needs its own ADR and must honor it.
