@@ -263,7 +263,11 @@ importers:
 
   packages/platform: {}
 
-  packages/renderer: {}
+  packages/renderer:
+    dependencies:
+      '@cabane3d/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/ui:
     dependencies:
@@ -273,6 +277,9 @@ importers:
       '@cabane3d/platform':
         specifier: workspace:*
         version: link:../platform
+      '@cabane3d/renderer':
+        specifier: workspace:*
+        version: link:../renderer
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0

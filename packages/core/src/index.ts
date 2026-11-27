@@ -4,5 +4,5 @@ export type { LengthParseError, LengthParseResult, LengthUnit } from './length-i
 export { formatLength, parseLength } from './length-input';
 export type { Element, Level, LevelId, Project, WallDefaults } from './project';
 export { createProject } from './project';
-export type { Mm, Rad } from './units';
+export type { Mm, Point, Rad } from './units';
 export { LENGTH_TOLERANCE, lengthsEqual, mm, rad } from './units';
