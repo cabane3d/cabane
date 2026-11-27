@@ -44,3 +44,23 @@ export function selectTool(page: Page) {
 export function statusBar(page: Page) {
   return page.getByRole('contentinfo', { name: 'Status bar', exact: true });
 }
+
+/** The Wall tool button of the Tool bar (docs/api/walls.md). */
+export function wallTool(page: Page) {
+  return toolBar(page).getByRole('button', { name: 'Wall tool', exact: true });
+}
+
+/** The Undo button of the Top bar: an icon button named Undo (docs/api/walls.md). */
+export function undoButton(page: Page) {
+  return topBar(page).getByRole('button', { name: 'Undo', exact: true });
+}
+
+/** The Redo button of the Top bar: an icon button named Redo (docs/api/walls.md). */
+export function redoButton(page: Page) {
+  return topBar(page).getByRole('button', { name: 'Redo', exact: true });
+}
+
+/** The visually hidden list describing the elements of the plan, inside the Plan view (docs/api/walls.md). */
+export function planElements(page: Page) {
+  return planView(page).getByRole('list', { name: 'Plan elements', exact: true });
+}

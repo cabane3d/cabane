@@ -88,3 +88,61 @@ describe('tool state and the project', () => {
     expect(project.canUndo).toBe(false);
   });
 });
+
+describe('wall tool state', () => {
+  it.each([
+    { before: 'select', chosen: 'wall' },
+    { before: 'wall', chosen: 'select' },
+    { before: 'wall', chosen: 'wall' },
+    { before: 'select', chosen: 'select' },
+  ] as const)(
+    '@WALL-012 choosing the $chosen tool after the $before tool makes it the only active one',
+    ({ before, chosen }) => {
+      const state = createToolState();
+      state.choose(before);
+
+      state.choose(chosen);
+
+      expect(state.activeTool).toBe(chosen);
+    },
+  );
+
+  it.each([
+    { key: 'W', tool: 'wall' },
+    { key: 'V', tool: 'select' },
+  ] as const)('@WALL-013 the shortcut $key chooses the $tool tool', ({ key, tool }) => {
+    const state = createToolState();
+    // Start from the other tool, so that the key has to do the choosing.
+    state.choose(tool === 'wall' ? 'select' : 'wall');
+
+    expect(state.handleKey(press(key))).toBe(true);
+
+    expect(state.activeTool).toBe(tool);
+  });
+
+  it.each([{ modifier: 'ctrl' }, { modifier: 'alt' }] as const)(
+    '@WALL-014 W with $modifier does nothing',
+    ({ modifier }) => {
+      const state = createToolState();
+      // Control: the plain shortcut does choose the Wall tool.
+      expect(state.handleKey(press('w'))).toBe(true);
+      state.choose('select');
+
+      const modified = modifier === 'ctrl' ? press('w', { ctrl: true }) : press('w', { alt: true });
+      expect(state.handleKey(modified)).toBe(false);
+
+      expect(state.activeTool).toBe('select');
+    },
+  );
+
+  it('@WALL-015 W while the focus is in a text field does nothing', () => {
+    const state = createToolState();
+    // Control: outside a text field, the same key does choose the Wall tool.
+    expect(state.handleKey(press('w'))).toBe(true);
+    state.choose('select');
+
+    expect(state.handleKey(press('w', { inTextField: true }))).toBe(false);
+
+    expect(state.activeTool).toBe('select');
+  });
+});

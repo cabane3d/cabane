@@ -32,6 +32,8 @@ export interface PlanViewState {
 export interface PlanMemory {
   cursor?: PagePoint;
   originBeforePan?: PagePoint;
+  /** The shared point of the joint that the last step found on the plan (draw-wall). */
+  joint?: MmPoint;
 }
 
 /** Reads the view of the Plan view region. Waits until the renderer has published its attributes. */
