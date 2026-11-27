@@ -1,6 +1,7 @@
 import { resolve } from 'node:path';
 import { _electron as electron, type Page } from '@playwright/test';
 import { test as base, createBdd } from 'playwright-bdd';
+import type { PlanMemory } from './plan-view';
 
 const desktopMain = resolve(import.meta.dirname, '../../apps/desktop/out/main/index.js');
 
@@ -12,6 +13,8 @@ interface Fixtures {
    * Step definitions use this fixture instead of `page`, so one scenario can run at several levels.
    */
   appPage: Page;
+  /** What the steps of one scenario remember about the plan gestures (see `plan-view.ts`). */
+  planMemory: PlanMemory;
 }
 
 export const test = base.extend<Fixtures>({
@@ -27,6 +30,10 @@ export const test = base.extend<Fixtures>({
     } finally {
       await app.close();
     }
+  },
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright requires a destructuring pattern as first argument
+  planMemory: async ({}, use) => {
+    await use({});
   },
 });
 
