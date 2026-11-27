@@ -14,9 +14,11 @@ import {
 } from './view';
 import {
   closesChain,
+  drawsWall,
   extendChain,
   hasLength,
   pruneChain,
+  restoreChain,
   startChain,
   type WallChain,
 } from './wall-chain';
@@ -232,19 +234,18 @@ export function mountPlanCanvas(
     if (point === null) return;
     if (chain === null) {
       chain = startChain(point);
-    } else if (hasLength(chain, point)) {
+    } else if (drawsWall(chain, point)) {
       const id = events.onDrawWall?.({ start: chain.current, end: point }) ?? null;
       if (id !== null) chain = closesChain(chain, point) ? null : extendChain(chain, id, point);
     }
     publishDrawing();
   };
 
-  /** Ends the chain; the walls already drawn stay. Returns whether a chain was going on. */
-  const endChain = (): boolean => {
-    if (chain === null) return false;
+  /** Ends the chain; the walls already drawn stay. */
+  const endChain = () => {
+    if (chain === null) return;
     chain = null;
     publishDrawing();
-    return true;
   };
 
   const setView = (next: PlanView) => {
@@ -329,9 +330,10 @@ export function mountPlanCanvas(
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.isComposing) return;
-    // Escape ends the chain; the walls already drawn stay.
+    // Escape ends the chain; the walls already drawn stay. Not prevented: an open tooltip or menu
+    // closes on the same key press (docs/api/walls.md). A text field keeps its own Escape.
     if (event.key === 'Escape') {
-      if (!matches(event.target, TEXT_ENTRY) && endChain()) event.preventDefault();
+      if (!matches(event.target, TEXT_ENTRY)) endChain();
       return;
     }
     if (event.code !== 'Space') return;
@@ -399,8 +401,12 @@ export function mountPlanCanvas(
       scene = next;
       anchors = anchorsOf(next.level);
       const shown = new Set(wallsOf(next.level).map((wall) => wall.id));
-      // After an undo, drawing continues from the start of the wall that was removed.
-      if (chain) chain = pruneChain(chain, (id) => shown.has(id));
+      // After an undo, drawing continues from the start of the wall that was removed; after a
+      // redo, from the end of the wall that is back.
+      if (chain) {
+        const exists = (id: WallId) => shown.has(id);
+        chain = restoreChain(pruneChain(chain, exists), exists);
+      }
       publishElements();
     },
     setWallTool(active) {

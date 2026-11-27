@@ -7,4 +7,5 @@ export { createProject, observeProject } from './project';
 export type { Mm, Point, Rad } from './units';
 export { LENGTH_TOLERANCE, lengthsEqual, mm, rad } from './units';
 export type { Wall, WallId } from './wall';
+export { wallCorners } from './wall';
 export { findWall, wallsOf } from './walls';

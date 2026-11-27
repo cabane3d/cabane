@@ -3,7 +3,7 @@
  * geometry follows the view, the pen (line widths, marks, text) stays constant on screen. Colors,
  * widths, sizes and fonts come from the plan tokens only.
  */
-import { LENGTH_TOLERANCE, type Mm, mm, type Point, type Wall } from '@cabane3d/core';
+import { LENGTH_TOLERANCE, type Mm, type Point, type Wall, wallCorners } from '@cabane3d/core';
 import type { PlanTokens } from './tokens';
 import { type PlanView, planToScreen, type ScreenPoint } from './view';
 
@@ -20,17 +20,6 @@ export interface PlanPicture {
     readonly end: Point;
     readonly thickness: Mm;
   } | null;
-}
-
-/** The four corners of a wall footprint, `thickness` to the right of `start → end`. */
-function footprint(start: Point, end: Point, thickness: number): readonly Point[] {
-  const length = Math.hypot(end.x - start.x, end.y - start.y);
-  const right = { x: (end.y - start.y) / length, y: -(end.x - start.x) / length };
-  const moved = (point: Point): Point => ({
-    x: mm(point.x + right.x * thickness),
-    y: mm(point.y + right.y * thickness),
-  });
-  return [start, end, moved(end), moved(start)];
 }
 
 /** A wall: filled solid (poché), its edges in the medium pen. */
@@ -176,7 +165,13 @@ export function drawPlan(
     drawing &&
     Math.hypot(drawing.end.x - drawing.start.x, drawing.end.y - drawing.start.y) >= LENGTH_TOLERANCE
   ) {
-    drawFootprint(context, view, tokens, footprint(drawing.start, drawing.end, drawing.thickness));
+    // The wall has a length (checked above): its corners are defined.
+    drawFootprint(
+      context,
+      view,
+      tokens,
+      wallCorners(drawing.start, drawing.end, drawing.thickness),
+    );
     drawDimension(context, view, tokens, drawing.start, drawing.end);
   }
   for (const anchor of picture.anchors) drawAnchor(context, view, tokens, anchor);

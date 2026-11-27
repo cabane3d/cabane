@@ -42,17 +42,29 @@ function freezePoint(point: Point): Point {
   return Object.freeze({ x: point.x, y: point.y });
 }
 
-/** Builds the read-only wall of the given stored values, with its length and corners. */
-export function wallOf(values: WallValues): Wall {
-  const { start, end, thickness } = values;
+/**
+ * The corners of a wall of the given start, end and thickness (same rule as `Wall.corners`):
+ * `start`, `end`, then `end` and `start` moved by `thickness` to the right of `start → end`.
+ * Pure. The distance between `start` and `end` must not be zero.
+ */
+export function wallCorners(
+  start: Point,
+  end: Point,
+  thickness: Mm,
+): readonly [Point, Point, Point, Point] {
   const length = distanceBetween(start, end);
-  // A stored wall always has a length (addWall refuses the others): the division is safe.
   const right = { x: (end.y - start.y) / length, y: -(end.x - start.x) / length };
   const offset = (point: Point): Point =>
     freezePoint({
       x: mm(point.x + right.x * thickness),
       y: mm(point.y + right.y * thickness),
     });
+  return Object.freeze([freezePoint(start), freezePoint(end), offset(end), offset(start)] as const);
+}
+
+/** Builds the read-only wall of the given stored values, with its length and corners. */
+export function wallOf(values: WallValues): Wall {
+  const { start, end, thickness } = values;
   return Object.freeze({
     kind: 'wall',
     id: values.id,
@@ -60,12 +72,8 @@ export function wallOf(values: WallValues): Wall {
     end: freezePoint(end),
     thickness,
     height: values.height,
-    length,
-    corners: Object.freeze([
-      freezePoint(start),
-      freezePoint(end),
-      offset(end),
-      offset(start),
-    ] as const),
+    length: distanceBetween(start, end),
+    // A stored wall always has a length (addWall refuses the others): its corners are defined.
+    corners: wallCorners(start, end, thickness),
   });
 }
