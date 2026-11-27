@@ -56,7 +56,7 @@ const TOOLS: readonly { readonly id: ToolId; readonly label: string; readonly ic
  * The Tool bar, floating over the left side of the Plan view (specs/ui/tool-bar.feature). The
  * active tool is window state, kept out of the project (ADR-0004).
  */
-function ToolBar() {
+function MainToolBar() {
   // The Main window is mounted when a project is shown, so each shown project gets its own state.
   const [tools] = useState(createToolState);
   // Mirror of `tools.activeTool`, so that React renders again when it changes.
@@ -102,7 +102,7 @@ export function MainWindow({ project }: MainWindowProps) {
     <main aria-label="Main window" className="flex h-screen flex-col bg-background text-foreground">
       <TopBar projectName={project.name} />
       <section aria-label="Plan view" className="relative min-h-0 flex-1">
-        <ToolBar />
+        <MainToolBar />
         <LevelTabs project={project} />
       </section>
     </main>
