@@ -1,6 +1,10 @@
 import type { LevelId, Project } from '@cabane3d/core';
-import { useState } from 'react';
+import { MousePointer2 } from 'lucide-react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../components/tabs';
+import { ToolButton, Toolbar } from '../components/toolbar';
+import { createToolState, TOOL_SHORTCUTS, type ToolId } from '../tool-state';
+import { keyPressOf } from './key-press';
 
 export interface MainWindowProps {
   readonly project: Project;
@@ -44,12 +48,61 @@ function LevelTabs({ project }: { project: Project }) {
   );
 }
 
+/** The tools of the Tool bar, from top to bottom. */
+const TOOLS: readonly { readonly id: ToolId; readonly label: string; readonly icon: ReactNode }[] =
+  [{ id: 'select', label: 'Select tool', icon: <MousePointer2 /> }];
+
+/**
+ * The Tool bar, floating over the left side of the Plan view (specs/ui/tool-bar.feature). The
+ * active tool is window state, kept out of the project (ADR-0004).
+ */
+function MainToolBar() {
+  // The Main window is mounted when a project is shown, so each shown project gets its own state.
+  const [tools] = useState(createToolState);
+  // Mirror of `tools.activeTool`, so that React renders again when it changes.
+  const [activeTool, setActiveTool] = useState<ToolId>(tools.activeTool);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!tools.handleKey(keyPressOf(event))) return;
+      event.preventDefault();
+      setActiveTool(tools.activeTool);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [tools]);
+
+  const choose = (tool: ToolId) => {
+    tools.choose(tool);
+    setActiveTool(tools.activeTool);
+  };
+
+  return (
+    <Toolbar
+      aria-label="Tool bar"
+      className="absolute top-2 left-2 rounded-xl border border-popover-border bg-popover p-1 shadow-popover"
+    >
+      {TOOLS.map((tool) => (
+        <ToolButton
+          key={tool.id}
+          label={tool.label}
+          shortcut={TOOL_SHORTCUTS[tool.id]}
+          icon={tool.icon}
+          active={activeTool === tool.id}
+          onClick={() => choose(tool.id)}
+        />
+      ))}
+    </Toolbar>
+  );
+}
+
 /** The application window once a project is open (docs/design/main-window.md). */
 export function MainWindow({ project }: MainWindowProps) {
   return (
     <main aria-label="Main window" className="flex h-screen flex-col bg-background text-foreground">
       <TopBar projectName={project.name} />
       <section aria-label="Plan view" className="relative min-h-0 flex-1">
+        <MainToolBar />
         <LevelTabs project={project} />
       </section>
     </main>

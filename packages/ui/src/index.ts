@@ -67,3 +67,5 @@ export { ToolButton, Toolbar, ToolbarSeparator } from './components/toolbar';
 export type { TooltipProps } from './components/tooltip';
 export { Tooltip, TooltipProvider } from './components/tooltip';
 export { cn } from './lib/cn';
+export type { KeyPress, ToolId, ToolState } from './tool-state';
+export { createToolState } from './tool-state';
