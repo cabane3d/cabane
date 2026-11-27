@@ -39,3 +39,8 @@ export function toolBar(page: Page) {
 export function selectTool(page: Page) {
   return toolBar(page).getByRole('button', { name: 'Select tool', exact: true });
 }
+
+/** The Status bar, at the bottom of the Main window (docs/design/main-window.md). */
+export function statusBar(page: Page) {
+  return page.getByRole('contentinfo', { name: 'Status bar', exact: true });
+}

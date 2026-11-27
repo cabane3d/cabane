@@ -10,5 +10,11 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@cabane3d/core": "workspace:*"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.0"
   }
 }

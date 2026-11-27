@@ -15,6 +15,12 @@ export type Mm = number & { readonly [mmBrand]: true };
 /** An angle in radians. */
 export type Rad = number & { readonly [radBrand]: true };
 
+/** A point of the plan, in millimeters (X to the right, Y up). */
+export interface Point {
+  readonly x: Mm;
+  readonly y: Mm;
+}
+
 /** Tolerance used for every geometric length comparison, in millimeters. */
 export const LENGTH_TOLERANCE = 0.01 as Mm;
 

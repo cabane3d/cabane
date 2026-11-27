@@ -1,10 +1,13 @@
-import type { LevelId, Project } from '@cabane3d/core';
+import type { LevelId, Point, Project } from '@cabane3d/core';
+import { type PlanView, zoomPercent } from '@cabane3d/renderer';
 import { MousePointer2 } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger } from '../components/tabs';
 import { ToolButton, Toolbar } from '../components/toolbar';
 import { createToolState, TOOL_SHORTCUTS, type ToolId } from '../tool-state';
 import { keyPressOf } from './key-press';
+import { PlanViewSection } from './plan-view';
+import { StatusBar, showCursor } from './status-bar';
 
 export interface MainWindowProps {
   readonly project: Project;
@@ -98,13 +101,27 @@ function MainToolBar() {
 
 /** The application window once a project is open (docs/design/main-window.md). */
 export function MainWindow({ project }: MainWindowProps) {
+  // The view is window state, not part of the project (ADR-0004). Only the rounded zoom goes
+  // through React: it changes with the wheel only. The cursor coordinates change at every pointer
+  // move, so they are written straight to the Status bar element.
+  const [zoom, setZoom] = useState<number | null>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
+
+  const onCursorMove = useCallback((point: Point | null) => {
+    if (cursorRef.current) showCursor(cursorRef.current, point);
+  }, []);
+  const onViewChange = useCallback((view: PlanView) => {
+    setZoom(Math.round(zoomPercent(view)));
+  }, []);
+
   return (
     <main aria-label="Main window" className="flex h-screen flex-col bg-background text-foreground">
       <TopBar projectName={project.name} />
-      <section aria-label="Plan view" className="relative min-h-0 flex-1">
+      <PlanViewSection onCursorMove={onCursorMove} onViewChange={onViewChange}>
         <MainToolBar />
         <LevelTabs project={project} />
-      </section>
+      </PlanViewSection>
+      <StatusBar zoom={zoom} cursorRef={cursorRef} />
     </main>
   );
 }
