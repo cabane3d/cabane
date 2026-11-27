@@ -24,7 +24,7 @@ Electron ships Chromium, which supports `<meta name="text-scale" content="scale"
 - **Controls grow with their text**: components use `min-h-control` and `min-h-bar` rather than fixed `h-*`, and never `white-space: nowrap` on text that can wrap, so scaled text is not clipped. Icon-only controls keep a square size in `rem` so they scale with the icon.
 - **The plan stays in screen pixels.** Line widths, handles, ticks and the plan text sizes (`--plan-*`, ADR-0021) are drawn on a canvas or SVG scaled by the zoom, not by the text scale, and keep their pixel values.
 - `scripts/check-design-tokens.sh` rejects `px` values in component styles outside `theme.css`, other than `1px` hairlines.
-- Components are checked at **200 % text** in Storybook (a root font size of 32 px), and the main window at a 320 CSS px reflow width where the layout allows it.
+- Storybook has a **Text scale** toolbar (100, 150, 200 %) that scales the root font size like the OS does, and a `Foundations / Accessibility / Large text` story. Components are checked at 200 % there.
 
 ## Alternatives considered
 

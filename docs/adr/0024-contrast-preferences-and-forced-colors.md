@@ -31,7 +31,7 @@ A review with the `modern-web-guidance` skill found that focus rings already use
 - If motion is ever introduced, it comes with its own ADR, and that ADR must honor `prefers-reduced-motion`. Until then, the `!important` reset in the base layer is the guard against anyone reintroducing it.
 
 **Checks**
-- Each component's story is checked in a forced-colors emulation and in the `prefers-contrast: more` variant of both themes (Storybook toolbar, or Playwright `forcedColors: 'active'` and `contrast: 'more'` emulation for `@visual` scenarios).
+- The `Foundations / Accessibility / States` story gathers every control that shows a state with a fill. It is reviewed in the browser's forced-colors and `prefers-contrast: more` emulation (DevTools > Rendering), in both themes. CSS media features cannot be switched from a Storybook toolbar, so the emulation is manual until a Playwright `@visual` scenario covers it.
 - The accessibility addon (axe) stays enabled for every story.
 
 ## Alternatives considered

@@ -137,7 +137,8 @@
 
 /*
  * More contrast (ADR-0024): separators, field borders and secondary text get stronger values.
- * Same token names, in both themes.
+ * Same token names, in both themes. The dark values apply only when the dark theme is in use:
+ * forced with `data-theme="dark"`, or chosen by the system and not forced to light.
  */
 @media (prefers-contrast: more) {
   :root {
@@ -148,23 +149,17 @@
     --hover: #d4c8c5;
   }
 
-  :root:not([data-theme="light"]) {
+  :root[data-theme="dark"] {
     --muted-foreground: #d4d8dc;
     --border: #8a929b;
     --input: #aeb4bb;
     --popover-border: #aeb4bb;
     --hover: #454d58;
   }
+}
 
-  :root[data-theme="light"] {
-    --muted-foreground: #3d434a;
-    --border: #6b727b;
-    --input: #4a5058;
-    --popover-border: #4a5058;
-    --hover: #d4c8c5;
-  }
-
-  :root[data-theme="dark"] {
+@media (prefers-contrast: more) and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
     --muted-foreground: #d4d8dc;
     --border: #8a929b;
     --input: #aeb4bb;
@@ -312,19 +307,37 @@
   /*
    * Forced colors (Windows High Contrast, ADR-0024): backgrounds are replaced by system colors,
    * so a state shown by a fill alone would disappear. Each on/selected/highlighted state gets an
-   * outline in the system Highlight color as well.
+   * outline in the system Highlight color as well. `:where()` keeps these rules at zero
+   * specificity so the focus ring below always wins; a focused selected control gets a double
+   * outline, which still tells "selected" and "focused" apart.
    */
   @media (forced-colors: active) {
-    [aria-pressed="true"],
-    [aria-selected="true"],
-    [role="tab"][data-state="active"],
-    [role="switch"][data-state="checked"],
-    [role="radio"][data-state="checked"],
-    [role="checkbox"][data-state="checked"],
-    [role="checkbox"][data-state="indeterminate"],
-    [data-highlighted] {
+    :where(
+        [aria-pressed="true"],
+        [aria-selected="true"],
+        [role="tab"][data-state="active"],
+        [role="switch"][data-state="checked"],
+        [role="radio"][data-state="checked"],
+        [role="checkbox"][data-state="checked"],
+        [role="checkbox"][data-state="indeterminate"],
+        [data-highlighted]
+      ) {
       outline: 2px solid Highlight;
       outline-offset: -2px;
+    }
+
+    :where(
+        [aria-pressed="true"],
+        [aria-selected="true"],
+        [role="tab"][data-state="active"],
+        [role="switch"][data-state="checked"],
+        [role="radio"][data-state="checked"],
+        [role="checkbox"][data-state="checked"],
+        [role="checkbox"][data-state="indeterminate"],
+        [data-highlighted]
+      ):focus-visible {
+      outline: 4px double Highlight;
+      outline-offset: 2px;
     }
   }
 }

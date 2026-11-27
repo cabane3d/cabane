@@ -14,7 +14,7 @@ describe('theme scales (ADR-0023)', () => {
   it('expresses spacing, named sizes and text sizes in rem', () => {
     const scaleLines = themeBlock
       .split('\n')
-      .filter((line) => /^\s*--(spacing-[\w.]+|text-[\w-]+):/.test(line))
+      .filter((line) => /^\s*--(spacing-[\w.\\]+|text-[\w-]+):/.test(line))
       .filter((line) => !/initial|spacing-0:/.test(line));
     expect(scaleLines.length).toBeGreaterThan(20);
     for (const line of scaleLines) expect(line, line).toMatch(/rem;/);
@@ -35,6 +35,25 @@ describe('contrast preferences and forced colors (ADR-0024)', () => {
     for (const token of ['--border', '--input', '--muted-foreground', '--popover-border']) {
       expect(block).toContain(token);
     }
+  });
+
+  it('applies the dark contrast values only to the dark theme', () => {
+    const lightAndForcedDark = theme.slice(
+      theme.indexOf('@media (prefers-contrast: more) {'),
+      theme.indexOf('@media (prefers-contrast: more) and (prefers-color-scheme: dark)'),
+    );
+    // No selector that matches a light system without `data-theme`.
+    expect(lightAndForcedDark).not.toContain(':not([data-theme="light"])');
+    const systemDark = theme.slice(
+      theme.indexOf('@media (prefers-contrast: more) and (prefers-color-scheme: dark)'),
+    );
+    expect(systemDark.slice(0, 200)).toContain(':root:not([data-theme="light"])');
+  });
+
+  it('keeps the focus ring visible on a selected control in forced colors', () => {
+    const block = theme.slice(theme.indexOf('forced-colors: active'));
+    expect(block).toContain('):focus-visible');
+    expect(block).toContain('outline: 4px double Highlight');
   });
 
   it('outlines on/selected states in forced colors', () => {
