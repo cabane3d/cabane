@@ -24,34 +24,42 @@ export interface PlanCanvasEvents {
 }
 
 export interface PlanCanvas {
-  /** The current view. */
-  readonly view: PlanView;
   /** Removes every listener and observer. The elements stay in the page. */
   dispose(): void;
 }
 
-/** Elements that keep the Space key to themselves: it types a space or activates them. */
-const INTERACTIVE = [
+/** Elements where the Space key types text: it always stays theirs. */
+const TEXT_ENTRY = [
   'input',
   'textarea',
   'select',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[role="combobox"]',
+  '[role="spinbutton"]',
+  '[role="textbox"]',
+].join(',');
+
+/**
+ * Controls that Space activates. They keep it only while the pointer is not over the plan: a tool
+ * chosen with the mouse keeps the focus, and Space + drag over the plan must still move it.
+ */
+const CONTROL = [
   'button',
   'a[href]',
-  '[contenteditable]:not([contenteditable="false"])',
   '[role="button"]',
   '[role="checkbox"]',
-  '[role="combobox"]',
   '[role="menuitem"]',
+  '[role="menuitemcheckbox"]',
+  '[role="menuitemradio"]',
   '[role="option"]',
   '[role="radio"]',
   '[role="slider"]',
   '[role="switch"]',
   '[role="tab"]',
-  '[role="textbox"]',
 ].join(',');
 
-function isInteractive(target: EventTarget | null): boolean {
-  return target instanceof Element && target.closest(INTERACTIVE) !== null;
+function matches(target: EventTarget | null, selector: string): boolean {
+  return target instanceof Element && target.closest(selector) !== null;
 }
 
 const MIDDLE_BUTTON = 1;
@@ -71,6 +79,8 @@ export function mountPlanCanvas(
   let context: CanvasRenderingContext2D | null = null;
   let frame: number | null = null;
   let spaceHeld = false;
+  // Whether the pointer is over the plan itself: the canvas, not the controls floating over it.
+  let pointerInside = false;
   let pan: { readonly pointerId: number; last: ScreenPoint } | null = null;
 
   const localPoint = (event: MouseEvent): ScreenPoint => {
@@ -154,7 +164,12 @@ export function mountPlanCanvas(
     canvas.style.cursor = spaceHeld ? 'grab' : '';
   };
 
+  const onPointerEnter = () => {
+    pointerInside = true;
+  };
+
   const onPointerLeave = () => {
+    pointerInside = false;
     events.onCursorMove?.(null);
   };
 
@@ -169,15 +184,21 @@ export function mountPlanCanvas(
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.code !== 'Space' || event.isComposing || isInteractive(event.target)) return;
-    // Space held means "move the plan": it must not also scroll the page.
+    if (event.code !== 'Space' || event.isComposing) return;
+    if (matches(event.target, TEXT_ENTRY)) return;
+    if (!pointerInside && matches(event.target, CONTROL)) return;
+    // Space held means "move the plan": it must neither scroll the page nor activate the focused
+    // control. Listened to in the capture phase, so this runs before the controls' own handlers.
     event.preventDefault();
     spaceHeld = true;
     if (!pan) canvas.style.cursor = 'grab';
   };
 
   const onKeyUp = (event: KeyboardEvent) => {
-    if (event.code === 'Space') releaseSpace();
+    if (event.code !== 'Space') return;
+    // The keyup of an armed Space must not activate the focused control either.
+    if (spaceHeld) event.preventDefault();
+    releaseSpace();
   };
 
   const resizeObserver = new ResizeObserver((entries) => {
@@ -201,18 +222,16 @@ export function mountPlanCanvas(
   canvas.addEventListener('pointerup', endPan);
   canvas.addEventListener('pointercancel', endPan);
   canvas.addEventListener('lostpointercapture', endPan);
+  canvas.addEventListener('pointerenter', onPointerEnter);
   canvas.addEventListener('pointerleave', onPointerLeave);
   canvas.addEventListener('mousedown', onMouseDown);
-  window.addEventListener('keydown', onKeyDown);
-  window.addEventListener('keyup', onKeyUp);
+  window.addEventListener('keydown', onKeyDown, { capture: true });
+  window.addEventListener('keyup', onKeyUp, { capture: true });
   window.addEventListener('blur', releaseSpace);
 
   publish();
 
   return {
-    get view() {
-      return view;
-    },
     dispose() {
       resizeObserver.disconnect();
       if (frame !== null) cancelAnimationFrame(frame);
@@ -222,10 +241,11 @@ export function mountPlanCanvas(
       canvas.removeEventListener('pointerup', endPan);
       canvas.removeEventListener('pointercancel', endPan);
       canvas.removeEventListener('lostpointercapture', endPan);
+      canvas.removeEventListener('pointerenter', onPointerEnter);
       canvas.removeEventListener('pointerleave', onPointerLeave);
       canvas.removeEventListener('mousedown', onMouseDown);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('keydown', onKeyDown, { capture: true });
+      window.removeEventListener('keyup', onKeyUp, { capture: true });
       window.removeEventListener('blur', releaseSpace);
     },
   };
