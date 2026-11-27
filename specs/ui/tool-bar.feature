@@ -6,9 +6,10 @@ Feature: Tool bar
 
   This feature creates the Tool bar and its mechanism: the active tool, the
   shortcuts, the tooltips and the accessibility. The tools are added by the
-  features that give them something to do. For now it holds a single tool: the
-  Select tool, the default tool, with the shortcut V. It does nothing yet on
-  the Plan view; selecting elements comes with the features that create them.
+  features that give them something to do. It starts with the Select tool, the
+  default tool, with the shortcut V, which stays the first tool of the bar. It
+  does nothing yet on the Plan view; selecting elements comes with the
+  features that create them.
 
   The Select tool is active when a project is shown. Choosing a tool, with the
   mouse or with its shortcut, makes it the only active one; choosing the active
@@ -77,7 +78,7 @@ Feature: Tool bar
       Given the application is started
       When the user chooses New project
       Then the Tool bar is displayed in the Plan view
-      And the Tool bar contains only the Select tool
+      And the Tool bar starts with the Select tool
       And the Select tool is active
 
     @TOOL-007 @e2e @electron
