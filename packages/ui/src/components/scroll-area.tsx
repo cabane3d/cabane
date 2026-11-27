@@ -15,13 +15,13 @@ export function ScrollArea({
         orientation="vertical"
         className="flex w-1.5 touch-none select-none p-px"
       >
-        <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-muted-foreground" />
+        <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-muted-foreground forced-colors:border" />
       </ScrollAreaPrimitive.Scrollbar>
       <ScrollAreaPrimitive.Scrollbar
         orientation="horizontal"
         className="flex h-1.5 touch-none select-none flex-col p-px"
       >
-        <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-muted-foreground" />
+        <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-muted-foreground forced-colors:border" />
       </ScrollAreaPrimitive.Scrollbar>
       <ScrollAreaPrimitive.Corner />
     </ScrollAreaPrimitive.Root>

@@ -101,6 +101,9 @@ export function NumericField({
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     onKeyDown?.(event);
     if (event.defaultPrevented) return;
+    // An Enter that confirms an IME composition (Japanese, Chinese, Korean) is not a commit.
+    // `keyCode 229` covers engines that report `isComposing` as false on that keydown.
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === 'Enter') {
       event.preventDefault();
       commit();

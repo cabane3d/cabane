@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Design tokens guard (ADR-0019, ADR-0021): raw colors, arbitrary Tailwind values, rounded corners,
+# Design tokens guard (ADR-0019, ADR-0021, ADR-0023): raw colors, arbitrary Tailwind values, rounded corners,
 # shadows and raw stacking numbers are forbidden outside packages/ui/src/theme.css. Use the tokens.
 set -euo pipefail
 
@@ -18,6 +18,9 @@ patterns=(
   # Arbitrary values that bypass the spacing, size, type and layer scales (ADR-0021):
   # p-[13px], h-[30px], text-[15px], z-[5]… Use a scale step or add a token.
   "(^|[[:space:]\"'\`:!])-?(p[xytrblse]?|m[xytrblse]?|gap(-[xy])?|space-[xy]|w|h|size|min-[wh]|max-[wh]|inset(-[xy])?|top|right|bottom|left|start|end|translate-[xy]|text|leading|tracking|font|z)-\["
+  # Pixel values: sizes follow the OS text scale, so they are in rem (ADR-0023). 1px hairlines are
+  # allowed. Plan drawing code that needs screen pixels reads the --plan-* tokens instead.
+  "(^|[^0-9.a-zA-Z_-])([02-9]|[1-9][0-9]+)(\.[0-9]+)?px\b"
   # Raw stacking numbers: use z-(--layer-…)
   "(^|[[:space:]\"'\`:!])-?z-[0-9]+\b"
 )

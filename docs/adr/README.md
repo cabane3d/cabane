@@ -36,10 +36,12 @@ Agents (coder, test-writer, reviewer) must comply with accepted ADRs. A change t
 | [0016](0016-ui-framework.md)                               | UI framework: React                                          | Accepted |
 | [0017](0017-units-and-coordinate-systems.md)               | Units and coordinate systems                                 | Accepted |
 | [0018](0018-plain-gherkin-feature-files.md)                | Plain Gherkin `.feature` files                               | Accepted |
-| [0019](0019-design-system-and-tokens.md) | Design system and tokens | Accepted (amended by 0021) |
+| [0019](0019-design-system-and-tokens.md) | Design system and tokens | Accepted (amended by 0021, 0024) |
 | [0020](0020-review-on-github-with-maintainer-gate.md) | Review on the pull request, with a maintainer gate | Accepted |
-| [0021](0021-design-system-scales-density-and-components.md) | Design system: shapes, scales, density, motion and components | Accepted |
+| [0021](0021-design-system-scales-density-and-components.md) | Design system: shapes, scales, density, motion and components | Accepted (amended by 0023, 0024) |
 | [0022](0022-work-in-progress-specs.md) | Work-in-progress specs (`@wip`) | Accepted |
+| [0023](0023-relative-units-and-os-text-scale.md) | Relative units and operating system text scale | Accepted |
+| [0024](0024-contrast-preferences-and-forced-colors.md) | Contrast preferences, forced colors and motion | Accepted |
 
 ## Template
 

@@ -14,7 +14,8 @@ Code is written by agents from Gherkin specs and reviewed by the maintainer. Thi
 6. **Units** (ADR-0017): millimeters (`Mm` type) and radians throughout the model. Conversions (imported formats, Three.js meters, display) happen **only at boundaries**, in the dedicated functions. Geometric comparisons use the `core` tolerance, never `===`.
 7. **Design tokens only** (ADR-0019, ADR-0021): no raw colors, arbitrary Tailwind values, raw `z-*` or animations outside `packages/ui/src/theme.css`; only the colors, spacing, sizes, type, radius and shadow scales defined there exist. Use token utilities (`bg-background`, `text-accent-text`…) or `var(--token)`. A new visual need means a new token, documented in `docs/design/visual-identity.md`. Target WCAG 2.2 AA; never convey a state by color alone.
 8. **Electron security** (ADR-0010): `contextIsolation`, `sandbox`, no `nodeIntegration`. The renderer accesses the system **only** through `packages/platform`. Every new IPC channel is typed and validated with zod.
-9. **Nothing without tests.** A task is done only when `pnpm check` passes.
+9. **Web platform** (ADR-0023, ADR-0024): sizes are in `rem` and follow the OS text scale (`min-h-*`, never a fixed height on text); on/selected states also show in forced colors; custom `Enter` handlers in fields ignore IME composition (`isComposing`). Browser support is **Electron's bundled Chromium only**: Baseline Newly Available features are allowed without fallbacks.
+10. **Nothing without tests.** A task is done only when `pnpm check` passes.
 
 ## Architecture (ADR-0003)
 

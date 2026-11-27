@@ -1,6 +1,6 @@
 # ADR-0019: Design system and tokens
 
-- **Status**: Accepted, density, scales, corners and shadows amended by ADR-0021
+- **Status**: Accepted, density, scales, corners and shadows amended by ADR-0021, accessibility and contrast amended by ADR-0024
 - **Date**: 2026-11-01
 
 ## Context

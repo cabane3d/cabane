@@ -37,6 +37,10 @@ describe('cn', () => {
     expect(cn('h-control w-full', 'h-control-sm')).toBe('w-full h-control-sm');
   });
 
+  it('lets a later minimum height override an earlier one', () => {
+    expect(cn('min-h-control w-full', 'min-h-control-sm')).toBe('w-full min-h-control-sm');
+  });
+
   it('keeps a text size and a text color together', () => {
     expect(cn('text-base text-foreground', 'text-accent-text')).toBe('text-base text-accent-text');
   });

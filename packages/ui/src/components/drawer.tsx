@@ -44,7 +44,7 @@ export function DrawerContent({
       )}
       {...props}
     >
-      <div className="flex h-bar shrink-0 items-center gap-2 border-b pr-1.5 pl-3">
+      <div className="flex min-h-bar shrink-0 items-center gap-2 border-b pr-1.5 pl-3">
         <DialogPrimitive.Title className="flex-1 font-semibold text-lg">
           {title}
         </DialogPrimitive.Title>

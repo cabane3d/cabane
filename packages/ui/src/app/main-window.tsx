@@ -18,7 +18,7 @@ function TopBar({ projectName }: { projectName: string }) {
     <header
       role="banner"
       aria-label="Top bar"
-      className="flex h-bar shrink-0 items-center gap-1 border-b bg-background px-1.5"
+      className="flex min-h-bar shrink-0 items-center gap-1 border-b bg-background px-1.5"
     >
       <span className="px-2 font-semibold">{projectName}</span>
     </header>
