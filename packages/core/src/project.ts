@@ -7,10 +7,16 @@
  *
  * Document layout, schema version 1:
  * - `project` (map): `schemaVersion`, `name`, `wallDefaults` (map: `thickness`, `height`, in mm);
- * - `levels` (array of maps, from the lowest to the highest): `id`, `name`, `elevation`, `height`.
+ * - `levels` (array of maps, from the lowest to the highest): `id`, `name`, `elevation`, `height`,
+ *   `elements` (array of maps, in creation order);
+ * - an element of kind `wall` (map): `kind`, `id`, `startX`, `startY`, `endX`, `endY`,
+ *   `thickness`, `height`, in mm. Its length and corners are derived, not stored.
+ *
+ * The elements were added to version 1 without a migration: no project file existed before them.
  */
 import * as Y from 'yjs';
 import { type Mm, mm } from './units';
+import { type Wall, type WallId, type WallValues, wallOf } from './wall';
 
 /** Version of the document layout. Bumped with an explicit migration (ADR-0004). */
 const SCHEMA_VERSION = 1;
@@ -18,8 +24,8 @@ const SCHEMA_VERSION = 1;
 /** Identifier of a level, unique within its project. */
 export type LevelId = string & { readonly __brand: 'LevelId' };
 
-/** Union of element types. No element type exists yet: later features extend it. */
-export type Element = never;
+/** Union of element types. Later features extend it. */
+export type Element = Wall;
 
 export interface Level {
   readonly id: LevelId;
@@ -64,13 +70,32 @@ function newLevelId(): LevelId {
   return crypto.randomUUID() as LevelId;
 }
 
-/** Builds the Yjs map of a level. Its elements are not stored yet: no element type exists. */
+export function newWallId(): WallId {
+  return crypto.randomUUID() as WallId;
+}
+
+/** Builds the Yjs map of a level, with no element. */
 export function levelMap(level: Omit<Level, 'elements'>): Y.Map<unknown> {
   return new Y.Map<unknown>([
     ['id', level.id],
     ['name', level.name],
     ['elevation', level.elevation],
     ['height', level.height],
+    ['elements', new Y.Array<Y.Map<unknown>>()],
+  ]);
+}
+
+/** Builds the Yjs map of a wall from its stored values. */
+export function wallMap(wall: WallValues): Y.Map<unknown> {
+  return new Y.Map<unknown>([
+    ['kind', 'wall'],
+    ['id', wall.id],
+    ['startX', wall.start.x],
+    ['startY', wall.start.y],
+    ['endX', wall.end.x],
+    ['endY', wall.end.y],
+    ['thickness', wall.thickness],
+    ['height', wall.height],
   ]);
 }
 
@@ -96,7 +121,25 @@ function readMap(map: Y.Map<unknown>, key: string): Y.Map<unknown> {
   return value;
 }
 
-const NO_ELEMENTS: readonly Element[] = Object.freeze([]);
+/** The elements of a level map, in creation order. */
+export function elementMaps(level: Y.Map<unknown>): Y.Array<Y.Map<unknown>> {
+  const elements = level.get('elements');
+  if (!(elements instanceof Y.Array)) throw invalidDocument('"elements" must be an array');
+  return elements;
+}
+
+function readElement(map: unknown): Element {
+  if (!(map instanceof Y.Map)) throw invalidDocument('an element must be a map');
+  const kind = map.get('kind');
+  if (kind !== 'wall') throw invalidDocument(`unknown element kind ${String(kind)}`);
+  return wallOf({
+    id: readString(map, 'id') as WallId,
+    start: { x: readLength(map, 'startX'), y: readLength(map, 'startY') },
+    end: { x: readLength(map, 'endX'), y: readLength(map, 'endY') },
+    thickness: readLength(map, 'thickness'),
+    height: readLength(map, 'height'),
+  });
+}
 
 function readLevel(map: Y.Map<unknown>): Level {
   return Object.freeze({
@@ -104,7 +147,7 @@ function readLevel(map: Y.Map<unknown>): Level {
     name: readString(map, 'name'),
     elevation: readLength(map, 'elevation'),
     height: readLength(map, 'height'),
-    elements: NO_ELEMENTS,
+    elements: Object.freeze(elementMaps(map).toArray().map(readElement)),
   });
 }
 
@@ -162,6 +205,16 @@ export class ProjectDocument implements Project {
       height: readLength(defaults, 'height'),
     });
   }
+
+  /** The map of the wall defaults, changed by `setWallDefaults` only. */
+  get wallDefaultsMap(): Y.Map<unknown> {
+    return readMap(this.root, 'wallDefaults');
+  }
+
+  /** The map of the level `levelId`, or `undefined` when the project has no such level. */
+  levelMap(levelId: LevelId): Y.Map<unknown> | undefined {
+    return this.levelMaps.toArray().find((level) => level.get('id') === levelId);
+  }
 }
 
 /** Returns the implementation behind a project created by core. */
@@ -170,6 +223,20 @@ export function projectDocument(project: Project): ProjectDocument {
     throw new TypeError('The project was not created by @cabane3d/core');
   }
   return project;
+}
+
+/**
+ * Calls `listener` after every change of the project: a command, an undo or a redo. Returns the
+ * function that stops listening. For the interface, which shows the project again after a change;
+ * a change itself always goes through a command.
+ */
+export function observeProject(project: Project, listener: () => void): () => void {
+  const { doc } = projectDocument(project);
+  // `update` comes after the undo manager has recorded the change, so `canUndo` and `canRedo`
+  // are up to date when the listener reads them.
+  const onUpdate = () => listener();
+  doc.on('update', onUpdate);
+  return () => doc.off('update', onUpdate);
 }
 
 /**

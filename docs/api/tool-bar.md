@@ -60,7 +60,7 @@ Locators follow the glossary in `docs/design/main-window.md`. The Tool bar is a 
 | Spec wording | Observed in the page |
 |---|---|
 | the Tool bar is displayed in the Plan view | `getByRole('region', { name: 'Plan view' }).getByRole('toolbar', { name: 'Tool bar' })` is visible |
-| the Tool bar contains only the Select tool | inside the Tool bar, `getByRole('button')` has exactly one match, named `Select tool` |
+| the Tool bar starts with the Select tool | inside the Tool bar, the first `getByRole('button')` is named `Select tool` |
 | the user chooses the Select tool | click on `getByRole('button', { name: 'Select tool' })` |
 | the Select tool is active | that button has `aria-pressed="true"` |
 | the Select tool is announced as pressed | same check: `aria-pressed="true"` (and `"false"` for "not pressed") |

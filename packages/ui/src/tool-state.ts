@@ -6,8 +6,8 @@
  * having unsaved changes. No React here, so it can be tested without a screen.
  */
 
-/** `'select'` for now. A feature that adds a tool extends the union. */
-export type ToolId = 'select';
+/** The tools of the Tool bar. A feature that adds a tool extends the union. */
+export type ToolId = 'select' | 'wall';
 
 /** A key press, as seen by the tool shortcuts. */
 export interface KeyPress {
@@ -34,7 +34,7 @@ export interface ToolState {
 }
 
 /** The shortcut of each tool: a single key, written as shown in the tooltip. */
-export const TOOL_SHORTCUTS: Readonly<Record<ToolId, string>> = { select: 'V' };
+export const TOOL_SHORTCUTS: Readonly<Record<ToolId, string>> = { select: 'V', wall: 'W' };
 
 const DEFAULT_TOOL: ToolId = 'select';
 

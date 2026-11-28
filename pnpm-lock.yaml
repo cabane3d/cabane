@@ -257,7 +257,11 @@ importers:
         specifier: ^13.6.33
         version: 13.6.33
 
-  packages/geometry: {}
+  packages/geometry:
+    dependencies:
+      '@cabane3d/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/importers: {}
 
@@ -268,6 +272,9 @@ importers:
       '@cabane3d/core':
         specifier: workspace:*
         version: link:../core
+      '@cabane3d/geometry':
+        specifier: workspace:*
+        version: link:../geometry
     devDependencies:
       jsdom:
         specifier: ^31.0.0
