@@ -1,5 +1,6 @@
 import { type Level, type Mm, type Point, type WallId, wallsOf } from '@cabane3d/core';
 import { anchorsOf, findSnapPoint } from '@cabane3d/geometry';
+import { jointsOf, type PlanJoint } from './joints';
 import { drawPlan } from './plan-drawing';
 import { markSnappedAnchor, showPlanElements } from './plan-elements';
 import { loadPlanFonts, type PlanTokens, readPlanTokens, watchPlanTokens } from './tokens';
@@ -128,6 +129,7 @@ export function mountPlanCanvas(
   let disposed = false;
   let scene: PlanScene | null = null;
   let anchors: readonly Point[] = [];
+  let joints: readonly PlanJoint[] = [];
   let wallTool = false;
   let chain: WallChain | null = null;
   // The last cursor position over the plan, in screen pixels: the wall being drawn follows it.
@@ -173,6 +175,7 @@ export function mountPlanCanvas(
     const end = placedPoint();
     drawPlan(context, view, tokens, {
       walls: scene ? wallsOf(scene.level) : [],
+      joints,
       anchors: wallTool ? anchors : [],
       snapped: snappedAnchor(),
       drawing:
@@ -221,6 +224,7 @@ export function mountPlanCanvas(
       showPlanElements(
         elements,
         scene ? wallsOf(scene.level) : [],
+        joints,
         wallTool ? anchors : [],
         snappedAnchor(),
       );
@@ -400,7 +404,9 @@ export function mountPlanCanvas(
     showScene(next) {
       scene = next;
       anchors = anchorsOf(next.level);
-      const shown = new Set(wallsOf(next.level).map((wall) => wall.id));
+      const walls = wallsOf(next.level);
+      joints = jointsOf(walls);
+      const shown = new Set(walls.map((wall) => wall.id));
       // After an undo, drawing continues from the start of the wall that was removed; after a
       // redo, from the end of the wall that is back.
       if (chain) {

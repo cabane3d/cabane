@@ -12,12 +12,15 @@ import {
   type Wall,
   wallCorners,
 } from '@cabane3d/core';
+import type { PlanJoint } from './joints';
 import type { PlanTokens } from './tokens';
 import { type PlanView, planToScreen, type ScreenPoint } from './view';
 
 /** What the plan shows, besides the view. */
 export interface PlanPicture {
   readonly walls: readonly Wall[];
+  /** The joints of the walls, filled like the walls so that they merge with them. */
+  readonly joints: readonly PlanJoint[];
   /** The anchors, shown while the Wall tool is active; empty otherwise. */
   readonly anchors: readonly Point[];
   /** The anchor the point being placed snaps to, marked with a cross. */
@@ -30,7 +33,10 @@ export interface PlanPicture {
   } | null;
 }
 
-/** A wall: filled solid (poché), its edges in the medium pen. */
+/**
+ * A wall, or a joint: filled solid (poché), its edges in the medium pen. The edges are in the wall
+ * color too, so a joint and the walls it joins merge, with no line between them.
+ */
 function drawFootprint(
   context: CanvasRenderingContext2D,
   view: PlanView,
@@ -177,6 +183,7 @@ export function drawPlan(
   // The paper is the region's background.
   context.clearRect(0, 0, view.width, view.height);
   for (const wall of picture.walls) drawFootprint(context, view, tokens, wall.corners);
+  for (const joint of picture.joints) drawFootprint(context, view, tokens, joint.points);
   const { drawing } = picture;
   if (
     drawing &&

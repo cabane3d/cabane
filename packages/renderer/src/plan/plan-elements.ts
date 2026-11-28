@@ -4,6 +4,7 @@
  * like the view attributes: whether an anchor is snapped changes at every pointer move.
  */
 import { lengthsEqual, type Point, type Wall } from '@cabane3d/core';
+import type { PlanJoint } from './joints';
 
 /** A length as shown in the description: whole millimeters, the display unit. */
 function shown(value: number): string {
@@ -48,14 +49,35 @@ function isAt(anchor: Point, point: Point | null): boolean {
   return point !== null && lengthsEqual(anchor.x, point.x) && lengthsEqual(anchor.y, point.y);
 }
 
-/** Writes the items of the list: the walls, in creation order, then the anchors. */
+/** A joint: its shared point and its polygon, as JSON `[[x, y], …]`, in millimeters. */
+function jointItem(joint: PlanJoint): HTMLLIElement {
+  const item = document.createElement('li');
+  Object.assign(item.dataset, {
+    element: 'joint',
+    x: String(joint.at.x),
+    y: String(joint.at.y),
+    points: JSON.stringify(joint.points.map((point) => [point.x, point.y])),
+  });
+  item.textContent = `Joint at ${describePoint(joint.at)}`;
+  return item;
+}
+
+/**
+ * Writes the items of the list: the walls, in creation order, then the joints, in the order of
+ * `jointsOf`, then the anchors.
+ */
 export function showPlanElements(
   list: HTMLElement,
   walls: readonly Wall[],
+  joints: readonly PlanJoint[],
   anchors: readonly Point[],
   snapped: Point | null,
 ): void {
-  list.replaceChildren(...walls.map(wallItem), ...anchors.map(anchorItem));
+  list.replaceChildren(
+    ...walls.map(wallItem),
+    ...joints.map(jointItem),
+    ...anchors.map(anchorItem),
+  );
   markSnappedAnchor(list, anchors, snapped);
 }
 
