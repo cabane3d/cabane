@@ -18,6 +18,10 @@ function bddProject(tag: '@e2e' | '@electron' | '@visual') {
 const isCI = !!process.env.CI;
 
 export default defineConfig({
+  // Reference screenshots are committed, outside the generated .features-gen/ (git-ignored). Their
+  // name is the scenario identifier (WALL-021.png). No platform suffix: references come from the
+  // official Playwright Docker image only (ADR-0013).
+  snapshotPathTemplate: 'tests/visual/__screenshots__/{arg}{ext}',
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
