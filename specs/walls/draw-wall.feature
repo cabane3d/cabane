@@ -43,15 +43,20 @@ Feature: Draw walls
   two walls and that meeting point, so that the walls touch over their whole
   thickness and no square notch is left outside the corner. This is a mitre.
   A corner of a wall that turns towards the thickness side (drawing clockwise,
-  the thickness to the right) has no outer notch: it has no joint. When the
-  meeting point is farther from the shared point than twice the larger of the
-  two thicknesses (a very sharp angle), the corner is cut off instead (a
-  bevel): the fill joins the two outer corners of the walls at the shared
-  point, without the meeting point. Parallel walls, walls that only touch with
-  their sides, and walls that do not share a point have no joint. The stored
-  corners of a wall (WALL-006) never change: a joint only changes what the
-  plan draws. T-junctions and walls of different heights come with later
-  features.
+  the thickness to the right) has no outer notch: it has no joint. The faces
+  are extended past the end of the walls: when they meet before the shared
+  point (or at it), there is nothing to fill and no joint. When the meeting
+  point is farther from the shared point than twice the larger of the two
+  thicknesses (a very sharp angle), the corner is cut off instead (a bevel):
+  the fill joins the two outer corners of the walls at the shared point,
+  without the meeting point. Parallel walls, walls that only touch with their
+  sides, and walls that do not share a point have no joint. When more than two
+  walls meet at a point, a joint is drawn only between two walls that are
+  neighbours around that point: it is dropped when another wall meets at the
+  point inside the corner to fill (its direction away from the point lies
+  between the two walls, on the side of the meeting point). The stored corners
+  of a wall (WALL-006) never change: a joint only changes what the plan draws.
+  Walls of different heights come with later features.
 
   Display. While the Wall tool is active, the plan shows the anchors as small
   marks, and the anchor the point snaps to is marked with a small cross. During
@@ -473,8 +478,27 @@ Feature: Draw walls
         | (0, 0) | (4000, 0) | (4000, 0)   | (1000, 0)     | going back along the first wall   |
         | (0, 0) | (4000, 0) | (4000, 3000) | (4000, 0)    | both ending at the same point     |
         | (0, 0) | (4000, 0) | (5000, 0)   | (5000, 3000)  | not sharing a point               |
+        | (0, 0) | (4000, 0) | (6000, 2000) | (4000, 0)    | meeting before the shared point   |
 
-    @WALL-043 @e2e @electron
+    @WALL-047 @unit
+    Scenario: Two walls that meet give one joint
+      Given a new project
+      And a wall added from (0 mm, 0 mm) to (4000 mm, 0 mm) on "Level 0"
+      And a wall added from (4000 mm, 0 mm) to (4000 mm, 3000 mm) on "Level 0"
+      When the joints of "Level 0" are computed
+      Then there is 1 joint
+      And the joint is at (4000 mm, 0 mm)
+
+    @WALL-048 @unit
+    Scenario: A wall that meets inside the corner takes the joint away
+      Given a new project
+      And a wall added from (0 mm, 0 mm) to (4000 mm, 0 mm) on "Level 0"
+      And a wall added from (4000 mm, 0 mm) to (4000 mm, 3000 mm) on "Level 0"
+      And a wall added from (4000 mm, 0 mm) to (7000 mm, 0 mm) on "Level 0"
+      When the joints of "Level 0" are computed
+      Then there is no joint
+
+    @WALL-049 @e2e @electron
     Scenario: The plan shows a joint where two walls meet at an outer corner
       Given a new project is open in the Main window
       And the Wall tool is active
@@ -484,7 +508,7 @@ Feature: Draw walls
       Then the plan shows a joint at (4500 mm, 1000 mm)
       And that joint covers the points (4500, 1000) (4700, 1000) (4700, 800) (4500, 800)
 
-    @WALL-044 @e2e @electron
+    @WALL-050 @e2e @electron
     Scenario: The plan shows no joint where the corner has no outer notch
       Given a new project is open in the Main window
       And the Wall tool is active
@@ -493,7 +517,7 @@ Feature: Draw walls
       And the user clicks the plan at (4500 mm, -2000 mm)
       Then the plan shows no joint
 
-    @WALL-045 @e2e @electron
+    @WALL-051 @e2e @electron
     Scenario: Undo removes the joint with the wall
       Given a new project is open in the Main window
       And the Wall tool is active
@@ -504,7 +528,7 @@ Feature: Draw walls
       When the user chooses the Undo button of the Top bar
       Then the plan shows no joint
 
-    @WALL-046 @visual
+    @WALL-052 @visual
     Scenario: A joint at an outer corner
       Given a new project is open in the Main window
       And the Wall tool is active

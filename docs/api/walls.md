@@ -163,6 +163,9 @@ function findSnapPoint(
 | the joint of the two walls is computed | `jointOf(first, second)` |
 | the joint covers the points (x, y) … | the result has these points, in this order, each within `0.01` |
 | the two walls have no joint | the result is `null` |
+| the joints of "Level 0" are computed | `jointsOf(wallsOf(level))` |
+| there is 1 joint / there is no joint | the result has 1 item / is empty |
+| the joint is at P | its `at` equals `P` within `0.01` |
 
 ### Joints
 
@@ -182,9 +185,27 @@ const MITRE_LIMIT = 2;
  * the outer corner of `first` at P. The outer corner of a wall at P is P when its outer face is
  * the edge through P, and P moved by the thickness to the right of the wall otherwise. M is left
  * out (a bevel) when `|PM| > MITRE_LIMIT * max(thickness of the two walls)`.
- * `null` when the walls are parallel, when the polygon has no area, or when they share no point.
+ * The faces are extended past the end of the walls: M must lie behind the outer corner of each
+ * wall, seen from its away direction, by more than `LENGTH_TOLERANCE`. `null` when it does not,
+ * when the walls are parallel, when the polygon has no area, or when they share no point.
  */
 function jointOf(first: Wall, second: Wall): readonly Point[] | null;
+
+interface Joint {
+  /** The shared point. */
+  readonly at: Point;
+  /** The polygon of `jointOf`. */
+  readonly points: readonly Point[];
+}
+
+/**
+ * The joints of a list of walls (the walls of a level, in creation order): `jointOf` for each pair
+ * `(i, j)` with `i < j`, ordered by `i` then `j`, without the `null` ones. A joint is dropped when
+ * another wall of the list has a point within `LENGTH_TOLERANCE` of the shared point and its
+ * direction away from that point lies strictly between the two walls, in the angular sector that
+ * contains the direction from the shared point to M (neighbours around the point only).
+ */
+function jointsOf(walls: readonly Wall[]): readonly Joint[];
 ```
 
 The examples of the spec fix the order of the points: P, the corner of `second`, M, the corner of `first` (a bevel: P, the corner of `second`, the corner of `first`).
@@ -211,7 +232,7 @@ Inside the `Plan view` region, a visually hidden `list` named `Plan elements`, w
 |---|---|
 | a wall of the level, in creation order | `data-element="wall"`, `data-wall-id`, `data-start-x`, `data-start-y`, `data-end-x`, `data-end-y`, `data-thickness`, `data-height` (millimeters, numbers), `data-selected` (`"true"` or `"false"`); text `Wall from (<x> mm, <y> mm) to (<x> mm, <y> mm)` |
 | an anchor, only while the Wall tool is active | `data-element="anchor"`, `data-x`, `data-y`, `data-snapped` (`"true"` for the one the cursor snaps to) |
-| a joint of two walls, in the order of `jointOf` over the pairs of walls (first wall by creation order, then second) | `data-element="joint"`, `data-x`, `data-y` (the shared point), `data-points` (the polygon as JSON `[[x,y],…]`, millimeters, in the order of `jointOf`) |
+| a joint of two walls, one per item of `jointsOf(wallsOf(level))`, in its order | `data-element="joint"`, `data-x`, `data-y` (the shared point), `data-points` (the polygon as JSON `[[x,y],…]`, millimeters, in the order of `jointOf`) |
 | a handle, on each end of the selected wall (edit-wall) | `data-element="handle"`, `data-x`, `data-y` |
 
 While a wall is being drawn, the `Plan view` region also has (updated by the renderer without going through React, they change at every mouse move): `data-drawing="true"` (`"false"` otherwise), `data-drawing-length` (the live length in millimeters) and `data-drawing-thickness`.
