@@ -1,7 +1,8 @@
 /**
- * Joints of walls that meet at an anchor: the scenarios WALL-040 to WALL-042 of
- * specs/walls/draw-wall.feature, through the public API of geometry (docs/api/walls.md). The walls
- * are built with the public API of core, through addWall, as the Given steps of the scenarios do.
+ * Joints of walls that meet at an anchor: the scenarios WALL-040 to WALL-042 and WALL-047 to
+ * WALL-048 of specs/walls/draw-wall.feature, through the public API of geometry
+ * (docs/api/walls.md). The walls are built with the public API of core, through addWall, as the
+ * Given steps of the scenarios do.
  */
 import { describe, expect, it } from 'vitest';
 import {
@@ -14,7 +15,7 @@ import {
   type Wall,
   wallsOf,
 } from '../../core/src/index';
-import { jointOf, MITRE_LIMIT } from './index';
+import { jointOf, jointsOf, MITRE_LIMIT } from './index';
 
 /** A plan point, written as [x, y] in millimeters. */
 type Coordinates = readonly [number, number];
@@ -47,6 +48,18 @@ function twoWalls(
   const [wallA, wallB] = walls;
   if (!wallA || !wallB) throw new Error('The two walls were not added');
   return [wallA, wallB];
+}
+
+/** Draws the walls of a scenario on "Level 0", in creation order, and returns the walls of the level. */
+function wallsOnLevelZero(
+  segments: readonly (readonly [Coordinates, Coordinates])[],
+): readonly Wall[] {
+  const project = createProject();
+  const level = levelZero(project);
+  for (const [[x1, y1], [x2, y2]] of segments) {
+    addWall(project, level.id, { start: at(x1, y1), end: at(x2, y2) });
+  }
+  return wallsOf(levelZero(project));
 }
 
 /** The joint of two walls, expected to exist, with each point within the tolerance of the spec. */
@@ -235,9 +248,62 @@ describe('jointOf: walls without an outer notch have no joint', () => {
         [5000, 3000],
       ] as const,
     },
+    {
+      label: 'meeting before the shared point',
+      first: [
+        [0, 0],
+        [4000, 0],
+      ] as const,
+      second: [
+        [6000, 2000],
+        [4000, 0],
+      ] as const,
+    },
   ])('@WALL-042 $label: the two walls have no joint', ({ first, second }) => {
     const [wallA, wallB] = twoWalls(first, second);
 
     expect(jointOf(wallA, wallB)).toBeNull();
+  });
+});
+
+describe('jointsOf: one joint per corner, dropped when a wall meets inside it', () => {
+  it('@WALL-047 two walls that meet give one joint, at the shared point', () => {
+    const walls = wallsOnLevelZero([
+      [
+        [0, 0],
+        [4000, 0],
+      ],
+      [
+        [4000, 0],
+        [4000, 3000],
+      ],
+    ]);
+
+    const joints = jointsOf(walls);
+
+    expect(joints).toHaveLength(1);
+    const joint = joints[0];
+    if (!joint) throw new Error('There is no joint');
+    expect(Math.abs(joint.at.x - 4000)).toBeLessThanOrEqual(POINT_TOLERANCE_MM);
+    expect(Math.abs(joint.at.y - 0)).toBeLessThanOrEqual(POINT_TOLERANCE_MM);
+  });
+
+  it('@WALL-048 a wall that meets inside the corner takes the joint away', () => {
+    const walls = wallsOnLevelZero([
+      [
+        [0, 0],
+        [4000, 0],
+      ],
+      [
+        [4000, 0],
+        [4000, 3000],
+      ],
+      [
+        [4000, 0],
+        [7000, 0],
+      ],
+    ]);
+
+    expect(jointsOf(walls)).toEqual([]);
   });
 });
