@@ -3,7 +3,15 @@
  * geometry follows the view, the pen (line widths, marks, text) stays constant on screen. Colors,
  * widths, sizes and fonts come from the plan tokens only.
  */
-import { LENGTH_TOLERANCE, type Mm, type Point, type Wall, wallCorners } from '@cabane3d/core';
+import {
+  formatLength,
+  LENGTH_TOLERANCE,
+  type Mm,
+  mm,
+  type Point,
+  type Wall,
+  wallCorners,
+} from '@cabane3d/core';
 import type { PlanTokens } from './tokens';
 import { type PlanView, planToScreen, type ScreenPoint } from './view';
 
@@ -41,6 +49,15 @@ function drawFootprint(
   context.lineJoin = 'miter';
   context.strokeStyle = tokens.wall;
   context.stroke();
+}
+
+/**
+ * The text of a live length on the plan, with its unit: `liveLengthLabel(mm(3500))` is
+ * `"3500 mm"`. The value is rounded to the millimeter, so it does not flicker with sub-millimeter
+ * cursor moves.
+ */
+export function liveLengthLabel(length: Mm): string {
+  return `${formatLength(mm(Math.round(length)), 'mm')} mm`;
 }
 
 /**
@@ -109,7 +126,7 @@ function drawDimension(
   context.fillStyle = tokens.ink;
   context.textAlign = 'center';
   context.textBaseline = outward ? 'bottom' : 'top';
-  context.fillText(String(Math.round(Math.hypot(end.x - start.x, end.y - start.y))), 0, 0);
+  context.fillText(liveLengthLabel(mm(Math.hypot(end.x - start.x, end.y - start.y))), 0, 0);
   context.restore();
 }
 
