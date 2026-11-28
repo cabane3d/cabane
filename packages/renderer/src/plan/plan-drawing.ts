@@ -12,7 +12,7 @@ import {
   type Wall,
   wallCorners,
 } from '@cabane3d/core';
-import type { PlanJoint } from './joints';
+import type { Joint } from '@cabane3d/geometry';
 import type { PlanTokens } from './tokens';
 import { type PlanView, planToScreen, type ScreenPoint } from './view';
 
@@ -20,7 +20,7 @@ import { type PlanView, planToScreen, type ScreenPoint } from './view';
 export interface PlanPicture {
   readonly walls: readonly Wall[];
   /** The joints of the walls, filled like the walls so that they merge with them. */
-  readonly joints: readonly PlanJoint[];
+  readonly joints: readonly Joint[];
   /** The anchors, shown while the Wall tool is active; empty otherwise. */
   readonly anchors: readonly Point[];
   /** The anchor the point being placed snaps to, marked with a cross. */

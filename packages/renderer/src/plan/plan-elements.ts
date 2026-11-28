@@ -4,7 +4,7 @@
  * like the view attributes: whether an anchor is snapped changes at every pointer move.
  */
 import { lengthsEqual, type Point, type Wall } from '@cabane3d/core';
-import type { PlanJoint } from './joints';
+import type { Joint } from '@cabane3d/geometry';
 
 /** A length as shown in the description: whole millimeters, the display unit. */
 function shown(value: number): string {
@@ -50,7 +50,7 @@ function isAt(anchor: Point, point: Point | null): boolean {
 }
 
 /** A joint: its shared point and its polygon, as JSON `[[x, y], …]`, in millimeters. */
-function jointItem(joint: PlanJoint): HTMLLIElement {
+function jointItem(joint: Joint): HTMLLIElement {
   const item = document.createElement('li');
   Object.assign(item.dataset, {
     element: 'joint',
@@ -69,7 +69,7 @@ function jointItem(joint: PlanJoint): HTMLLIElement {
 export function showPlanElements(
   list: HTMLElement,
   walls: readonly Wall[],
-  joints: readonly PlanJoint[],
+  joints: readonly Joint[],
   anchors: readonly Point[],
   snapped: Point | null,
 ): void {

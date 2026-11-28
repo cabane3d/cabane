@@ -8,8 +8,9 @@ import {
   type Project,
   wallsOf,
 } from '@cabane3d/core';
-import { describe, expect, it } from 'vitest';
-import { jointsOf } from './joints';
+import { jointsOf } from '@cabane3d/geometry';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mountPlanCanvas, type PlanCanvas } from './plan-canvas';
 import { drawPlan } from './plan-drawing';
 import { showPlanElements } from './plan-elements';
 import type { PlanTokens } from './tokens';
@@ -35,28 +36,60 @@ function chainThrough(...points: readonly Point[]): Project {
   return project;
 }
 
-/** An open square drawn counterclockwise: every corner turns away from the thickness. */
-function openSquare(): Project {
-  return chainThrough(at(0, 0), at(4000, 0), at(4000, 3000), at(0, 3000));
+/** A ResizeObserver that never reports: jsdom has no layout. */
+class NoResizeObserver implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
 
-describe('jointsOf', () => {
-  it('lists the joints over the pairs of walls, the first wall by creation order', () => {
-    const joints = jointsOf(wallsOf(level(openSquare())));
+describe('mountPlanCanvas, joints', () => {
+  let region: HTMLElement;
+  let canvas: HTMLCanvasElement;
+  let list: HTMLElement;
+  let plan: PlanCanvas;
 
-    expect(joints.map((joint) => [joint.at.x, joint.at.y])).toEqual([
-      [4000, 0],
-      [4000, 3000],
-    ]);
-    expect(joints[0]?.points[0]).toEqual(joints[0]?.at);
+  beforeEach(() => {
+    vi.stubGlobal('ResizeObserver', NoResizeObserver);
+    // Drawing needs a 2D context, which jsdom lacks: the frame never runs.
+    vi.stubGlobal('requestAnimationFrame', () => 1);
+    vi.stubGlobal('cancelAnimationFrame', () => {});
+    region = document.createElement('section');
+    canvas = document.createElement('canvas');
+    list = document.createElement('ul');
+    region.append(canvas, list);
+    document.body.append(region);
+    plan = mountPlanCanvas(region, canvas, {}, list);
   });
 
-  it('has no joint for walls that share no point', () => {
-    const project = createProject();
-    addWall(project, level(project).id, { start: at(0, 0), end: at(4000, 0) });
-    addWall(project, level(project).id, { start: at(5000, 0), end: at(5000, 3000) });
+  afterEach(() => {
+    plan.dispose();
+    region.remove();
+    vi.unstubAllGlobals();
+  });
 
-    expect(jointsOf(wallsOf(level(project)))).toEqual([]);
+  function show(project: Project): void {
+    plan.showScene({ level: level(project), wallThickness: project.wallDefaults.thickness });
+  }
+
+  function jointItems(): readonly HTMLElement[] {
+    return [...list.querySelectorAll<HTMLElement>('[data-element="joint"]')];
+  }
+
+  it('shows the joint of two walls that meet at an outer corner', () => {
+    show(chainThrough(at(0, 0), at(4000, 0), at(4000, 3000)));
+
+    expect(jointItems().map((item) => [item.dataset.x, item.dataset.y])).toEqual([['4000', '0']]);
+  });
+
+  it('shows no joint where a third wall meets inside the corner (WALL-048 layout)', () => {
+    const project = chainThrough(at(0, 0), at(4000, 0), at(4000, 3000));
+    addWall(project, level(project).id, { start: at(4000, 0), end: at(7000, 0) });
+
+    show(project);
+
+    expect(list.querySelectorAll('[data-element="wall"]')).toHaveLength(3);
+    expect(jointItems()).toEqual([]);
   });
 });
 

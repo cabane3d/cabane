@@ -1,6 +1,5 @@
 import { type Level, type Mm, type Point, type WallId, wallsOf } from '@cabane3d/core';
-import { anchorsOf, findSnapPoint } from '@cabane3d/geometry';
-import { jointsOf, type PlanJoint } from './joints';
+import { anchorsOf, findSnapPoint, type Joint, jointsOf } from '@cabane3d/geometry';
 import { drawPlan } from './plan-drawing';
 import { markSnappedAnchor, showPlanElements } from './plan-elements';
 import { loadPlanFonts, type PlanTokens, readPlanTokens, watchPlanTokens } from './tokens';
@@ -129,7 +128,7 @@ export function mountPlanCanvas(
   let disposed = false;
   let scene: PlanScene | null = null;
   let anchors: readonly Point[] = [];
-  let joints: readonly PlanJoint[] = [];
+  let joints: readonly Joint[] = [];
   let wallTool = false;
   let chain: WallChain | null = null;
   // The last cursor position over the plan, in screen pixels: the wall being drawn follows it.
