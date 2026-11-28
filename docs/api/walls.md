@@ -37,6 +37,21 @@ function wallsOf(level: Level): readonly Wall[];
 function findWall(project: Project, wallId: WallId): Wall | undefined;
 ```
 
+```ts
+/**
+ * The corners of a wall of the given start, end and thickness (same rule as `Wall.corners`).
+ * Pure; `wallOf` uses it, and so does the plan for the wall being drawn. The distance between
+ * `start` and `end` must not be zero.
+ */
+function wallCorners(start: Point, end: Point, thickness: Mm): readonly [Point, Point, Point, Point];
+
+/**
+ * Calls `listener` after every change of the project (a command, an undo, a redo), until the
+ * returned function is called. For the interface only: a change itself goes through a command.
+ */
+function observeProject(project: Project, listener: () => void): () => void;
+```
+
 `Level.elements` contains the walls of the level, in creation order. `Level` and the other types are those of `docs/api/project.md`.
 
 The document layout is extended in schema version 1, with no migration: no project file exists yet (the save feature is not specified). The `elements` of a level are stored in its Yjs map, and the undo manager tracks them (ADR-0004). The exact layout is internal.
@@ -144,6 +159,35 @@ function findSnapPoint(
 | the snap point is P / no anchor | the result equals `P` with `lengthsEqual` on both axes / is `null` |
 | the anchors of "Level 0" are listed | `anchorsOf(level)` |
 | the anchors are P, Q and R | the result equals `[P, Q, R]`, in this order |
+| a wall added from A to B on "Level 0" (Given) | `addWall`, then the walls from `wallsOf(level)`: the first and the second wall of the level |
+| the joint of the two walls is computed | `jointOf(first, second)` |
+| the joint covers the points (x, y) … | the result has these points, in this order, each within `0.01` |
+| the two walls have no joint | the result is `null` |
+
+### Joints
+
+```ts
+/** A joint is cut off (bevel) when the meeting point is farther than this many times the larger thickness. */
+const MITRE_LIMIT = 2;
+
+/**
+ * The joint of two walls that share a point, as the polygon to fill, or `null` (no joint).
+ * The shared point is found with `LENGTH_TOLERANCE`, trying in this order: end of `first` and
+ * start of `second`, start of `first` and end of `second`, the two starts, the two ends.
+ *
+ * Seen from the shared point P, each wall has an away direction (towards its other end) and a
+ * thickness side (the right of its drawing direction). The outer face of a wall is the one on
+ * the side away from the other wall: its edge through P, or its edge offset by the thickness.
+ * M is where the two outer faces meet. The polygon is P, the outer corner of `second` at P, M,
+ * the outer corner of `first` at P. The outer corner of a wall at P is P when its outer face is
+ * the edge through P, and P moved by the thickness to the right of the wall otherwise. M is left
+ * out (a bevel) when `|PM| > MITRE_LIMIT * max(thickness of the two walls)`.
+ * `null` when the walls are parallel, when the polygon has no area, or when they share no point.
+ */
+function jointOf(first: Wall, second: Wall): readonly Point[] | null;
+```
+
+The examples of the spec fix the order of the points: P, the corner of `second`, M, the corner of `first` (a bevel: P, the corner of `second`, the corner of `first`).
 
 ## `ui` (`@cabane3d/ui`) (draw-wall)
 
@@ -167,6 +211,7 @@ Inside the `Plan view` region, a visually hidden `list` named `Plan elements`, w
 |---|---|
 | a wall of the level, in creation order | `data-element="wall"`, `data-wall-id`, `data-start-x`, `data-start-y`, `data-end-x`, `data-end-y`, `data-thickness`, `data-height` (millimeters, numbers), `data-selected` (`"true"` or `"false"`); text `Wall from (<x> mm, <y> mm) to (<x> mm, <y> mm)` |
 | an anchor, only while the Wall tool is active | `data-element="anchor"`, `data-x`, `data-y`, `data-snapped` (`"true"` for the one the cursor snaps to) |
+| a joint of two walls, in the order of `jointOf` over the pairs of walls (first wall by creation order, then second) | `data-element="joint"`, `data-x`, `data-y` (the shared point), `data-points` (the polygon as JSON `[[x,y],…]`, millimeters, in the order of `jointOf`) |
 | a handle, on each end of the selected wall (edit-wall) | `data-element="handle"`, `data-x`, `data-y` |
 
 While a wall is being drawn, the `Plan view` region also has (updated by the renderer without going through React, they change at every mouse move): `data-drawing="true"` (`"false"` otherwise), `data-drawing-length` (the live length in millimeters) and `data-drawing-thickness`.
@@ -196,12 +241,20 @@ While a wall is being drawn, the `Plan view` region also has (updated by the ren
 | the second wall starts at exactly P | the same, equal to `P` exactly |
 | the plan shows a wall being drawn with a length of L mm | `data-drawing="true"` and `data-drawing-length` within `0.01` of `L` |
 | the plan shows no wall being drawn | `data-drawing="false"` |
+| the plan shows a joint at P / no joint | an item `data-element="joint"` with `data-x` / `data-y` equal to `P` within `0.01` / none |
+| that joint covers the points … | `data-points` of that item, each point within `0.01` |
 | the plan shows an anchor at P and at Q / no anchor | items `data-element="anchor"` at those points / none |
 | the plan marks the anchor at P as snapped | the anchor item at `P` has `data-snapped="true"` |
 | the Undo / Redo button of the Top bar is disabled | `getByRole('banner', { name: 'Top bar' }).getByRole('button', { name: 'Undo' })` (`'Redo'`) is disabled |
 | the user chooses / chose the Undo (Redo) button of the Top bar | click on that button |
 | the plan matches its reference screenshot | `expect(planViewLocator).toHaveScreenshot('<id>.png')`, light theme, fake platform, scenario identifier as name |
 | the Tool bar matches its reference screenshot | `expect(toolbarLocator).toHaveScreenshot('WALL-021.png')` |
+
+Chain behaviours not covered by a scenario (maintainer's decisions on the review of draw-wall):
+
+- A click that would close a chain of a single wall (back on the start of that wall) creates no wall: it is ignored, and the chain goes on.
+- A redo during a chain brings the wall back into the chain, like the undo takes it out: drawing resumes from the end of the redone wall.
+- Escape ends the chain without `preventDefault()`, so an open tooltip or menu closes on the same key press.
 
 The Undo and Redo buttons are `IconButton`s named `Undo` and `Redo`, with the shortcut in their tooltip (`Ctrl+Z`, `Ctrl+Shift+Z`); `Ctrl+Z` and `Ctrl+Shift+Z` do nothing while the focus is in a text field.
 

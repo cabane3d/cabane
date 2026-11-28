@@ -30,13 +30,28 @@ Feature: Draw walls
   Anchors. The start and end points of the walls of the level are anchors. When
   the cursor is within 8 px of an anchor on screen (whatever the zoom), the
   point being placed snaps onto the nearest anchor, so that two walls meeting
-  there have exactly the same coordinates. This shared point is all a joint is
-  for now: the model keeps no link between walls, and the geometry of the joint
-  (mitres, T-junctions) is a later feature, so two walls meeting at a corner
-  show as two overlapping rectangles. Anchors are the clicked points, not the
-  corners of the thickness. There is no other snapping. The snap distance is an
+  there have exactly the same coordinates. The model keeps no link between
+  walls: a joint is not stored, it is a shape derived from two walls that share
+  a point (see Joints). Anchors are the clicked points, not the corners of the
+  thickness. There is no other snapping. The snap distance is an
   application constant, not a project setting. Walls may overlap or cross each
   other; nothing is checked.
+
+  Joints. When two walls of a level share a point (the start or the end of one
+  is the start or the end of the other) and are not parallel, their outer
+  faces are extended until they meet, and the plan fills the corner between the
+  two walls and that meeting point, so that the walls touch over their whole
+  thickness and no square notch is left outside the corner. This is a mitre.
+  A corner of a wall that turns towards the thickness side (drawing clockwise,
+  the thickness to the right) has no outer notch: it has no joint. When the
+  meeting point is farther from the shared point than twice the larger of the
+  two thicknesses (a very sharp angle), the corner is cut off instead (a
+  bevel): the fill joins the two outer corners of the walls at the shared
+  point, without the meeting point. Parallel walls, walls that only touch with
+  their sides, and walls that do not share a point have no joint. The stored
+  corners of a wall (WALL-006) never change: a joint only changes what the
+  plan draws. T-junctions and walls of different heights come with later
+  features.
 
   Display. While the Wall tool is active, the plan shows the anchors as small
   marks, and the anchor the point snaps to is marked with a small cross. During
@@ -54,7 +69,7 @@ Feature: Draw walls
   Tests use nothing else.
 
   Out of scope: selecting and editing walls, moving walls, curved walls, angle
-  snapping, alignment guides, T-junction anchors, entering a length with the
+  snapping, alignment guides, T-junction anchors and T-junction joints, entering a length with the
   keyboard while drawing, adding levels (so anchors are tested on a single
   level), openings, rooms, the 3D view.
 
@@ -418,4 +433,82 @@ Feature: Draw walls
       And the Wall tool is active
       And the user clicked the plan near (4500 mm, 1000 mm), a few pixels off
       When the user moves the cursor to (4500 mm, -2000 mm)
+      Then the plan matches its reference screenshot
+
+  Rule: Walls that meet at an anchor are joined with a mitre
+
+    @WALL-040 @unit
+    Scenario Outline: A joint fills the outer corner of two walls that meet
+      Given a new project
+      And a wall added from <a1> to <a2> on "Level 0"
+      And a wall added from <b1> to <b2> on "Level 0"
+      When the joint of the two walls is computed
+      Then the joint covers the points <points>
+
+      Examples:
+        | a1       | a2          | b1          | b2           | points                                                    |
+        | (0, 0)   | (4000, 0)   | (4000, 0)   | (4000, 3000) | (4000, 0) (4200, 0) (4200, -200) (4000, -200)             |
+        | (0, 0)   | (4000, 0)   | (4000, 0)   | (6000, 2000) | (4000, 0) (4141.42, -141.42) (4082.84, -200) (4000, -200) |
+
+    @WALL-041 @unit
+    Scenario: A very sharp angle is cut off instead of extended
+      Given a new project
+      And a wall added from (0 mm, 0 mm) to (4000 mm, 0 mm) on "Level 0"
+      And a wall added from (4000 mm, 0 mm) to (1000 mm, 1000 mm) on "Level 0"
+      When the joint of the two walls is computed
+      Then the joint covers the points (4000, 0) (4063.25, 189.74) (4000, -200)
+
+    @WALL-042 @unit
+    Scenario Outline: Walls without an outer notch have no joint
+      Given a new project
+      And a wall added from <a1> to <a2> on "Level 0"
+      And a wall added from <b1> to <b2> on "Level 0"
+      When the joint of the two walls is computed
+      Then the two walls have no joint
+
+      Examples:
+        | a1     | a2        | b1          | b2            | case                              |
+        | (0, 0) | (4000, 0) | (4000, 0)   | (4000, -3000) | turning towards the thickness     |
+        | (0, 0) | (4000, 0) | (4000, 0)   | (7000, 0)     | in line                           |
+        | (0, 0) | (4000, 0) | (4000, 0)   | (1000, 0)     | going back along the first wall   |
+        | (0, 0) | (4000, 0) | (4000, 3000) | (4000, 0)    | both ending at the same point     |
+        | (0, 0) | (4000, 0) | (5000, 0)   | (5000, 3000)  | not sharing a point               |
+
+    @WALL-043 @e2e @electron
+    Scenario: The plan shows a joint where two walls meet at an outer corner
+      Given a new project is open in the Main window
+      And the Wall tool is active
+      When the user clicks the plan at (1000 mm, 1000 mm)
+      And the user clicks the plan at (4500 mm, 1000 mm)
+      And the user clicks the plan at (4500 mm, 3000 mm)
+      Then the plan shows a joint at (4500 mm, 1000 mm)
+      And that joint covers the points (4500, 1000) (4700, 1000) (4700, 800) (4500, 800)
+
+    @WALL-044 @e2e @electron
+    Scenario: The plan shows no joint where the corner has no outer notch
+      Given a new project is open in the Main window
+      And the Wall tool is active
+      When the user clicks the plan at (1000 mm, 1000 mm)
+      And the user clicks the plan at (4500 mm, 1000 mm)
+      And the user clicks the plan at (4500 mm, -2000 mm)
+      Then the plan shows no joint
+
+    @WALL-045 @e2e @electron
+    Scenario: Undo removes the joint with the wall
+      Given a new project is open in the Main window
+      And the Wall tool is active
+      And the user clicked the plan at (1000 mm, 1000 mm)
+      And the user clicked the plan at (4500 mm, 1000 mm)
+      And the user clicked the plan at (4500 mm, 3000 mm)
+      Then the plan shows a joint at (4500 mm, 1000 mm)
+      When the user chooses the Undo button of the Top bar
+      Then the plan shows no joint
+
+    @WALL-046 @visual
+    Scenario: A joint at an outer corner
+      Given a new project is open in the Main window
+      And the Wall tool is active
+      And the user clicked the plan at (1000 mm, 1000 mm)
+      And the user clicked the plan at (4500 mm, 1000 mm)
+      When the user double-clicks the plan at (4500 mm, 3000 mm)
       Then the plan matches its reference screenshot
